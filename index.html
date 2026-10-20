@@ -142,16 +142,16 @@ let DATA = [
    obs:"Mercado con ruido, se ingresa a la operación asegurando un 50% y dejando correr, cierra SL positivo, se devuelve precio a Compra"},
   {fecha:"2026-10-13", direccion:"SELL", resultado:"SL", estrategia:0, ajustes:[],
    obs:"Ruido en Ventas, se asegura entrada inmediatamente queda en positivo se devuelve a SL"},
-  {fecha:"2026-10-14", direccion:null, resultado:"SL", estrategia:null, ajustes:[],
+  {fecha:"2026-10-14", direccion:"SELL", resultado:"SL", estrategia:null, ajustes:[],
    obs:"PPA 300, SL Ahorrado"},
-  {fecha:"2026-10-15", direccion:null, resultado:"SL", estrategia:null, ajustes:[],
+  {fecha:"2026-10-15", direccion:"SELL", resultado:"SL", estrategia:null, ajustes:[],
    obs:"PPA 135, SL Ahorrado"},
-  {fecha:"2026-10-16", direccion:null, resultado:"TP", estrategia:null, ajustes:[],
+  {fecha:"2026-10-16", direccion:"SELL", resultado:"TP", estrategia:null, ajustes:[],
    obs:"PA 59, TP"},
   {fecha:"2026-10-19", direccion:"SELL", resultado:"SL", estrategia:-5.73, ajustes:[0,0],
    obs:"Apertura con ruido en compra, se abre la venta pero se devuelve el precio, tranquilo sin expectativa, se hacen ajustes quedan todos en protección en el retroceso de la vela"},
-  {fecha:"2026-10-20", direccion:null, resultado:"TP", estrategia:null, ajustes:[0,-1.96,2.5],
-   obs:"PPA 141, se hacen 3 ajustes, por impulso se hace el tercero aunque se gano esa ultima debo respetar que maximo 2 operaciones"}
+  {fecha:"2026-10-20", direccion:"SELL", resultado:"TP", estrategia:null, ajustes:[0,-1.96,2.5],
+   obs:"PPA 141, se hacen 3 ajustes, por impulso se hace el tercero aunque se gano esa ultima debo respetar que maximo 2 operaciones, se hay estrategia un ajuste sino maximo 2 ajustes diarios (DISCIPLINA)"}
 ];
 
 const MAX_AJUSTES = 2;          // límite del plan
