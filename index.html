@@ -223,30 +223,38 @@ function cumpleOp(r, op){ return op==='estrategia' ? r.operoEstrategia : op==='a
 function cumpleDir(r, dir){ return dir==='todas' || r.direccion===dir; }
 function hayFiltro(){ return filtro.op!=='todas' || filtro.dir!=='todas'; }
 
+let ALL = [];   // días que cumplen el filtro en todos los meses, con el balance encadenado
+function enMes(r){
+  const f = parseFecha(r.fecha);
+  return f.getFullYear()===vista.y && f.getMonth()===vista.m;
+}
+
 function aplicarFiltro(){
   let bal = CUENTA_INICIAL;
-  VIS = ROWS.filter(r=>cumpleOp(r,filtro.op) && cumpleDir(r,filtro.dir)).map(r=>{
+  ALL = ROWS.filter(r=>cumpleOp(r,filtro.op) && cumpleDir(r,filtro.dir)).map(r=>{
     const estV  = filtro.op==='ajustes'    ? 0 : r.est;
     const discV = filtro.op==='estrategia' ? 0 : r.disc;
     const iniV = bal;
     bal = iniV + estV + discV;
     return {...r, estV, discV, iniV, finV:bal, plV:estV+discV};
   });
+  VIS = ALL.filter(enMes);      // lo que se ve: el mes elegido con el filtro aplicado
   VMAP = Object.fromEntries(VIS.map(r=>[r.fecha,r]));
 }
 
 function renderFiltros(){
+  const delMes = ROWS.filter(enMes);
   const ops = [['todas','Todas'],['estrategia','Estrategia'],['ajustes','Ajustes']]
-    .map(([k,t])=>[k,t,ROWS.filter(r=>cumpleOp(r,k)&&cumpleDir(r,filtro.dir)).length]);
+    .map(([k,t])=>[k,t,delMes.filter(r=>cumpleOp(r,k)&&cumpleDir(r,filtro.dir)).length]);
   const dirs = [['todas','Ambas'],['SELL','▼ SELL'],['BUY','▲ BUY']]
-    .map(([k,t])=>[k,t,ROWS.filter(r=>cumpleOp(r,filtro.op)&&cumpleDir(r,k)).length]);
+    .map(([k,t])=>[k,t,delMes.filter(r=>cumpleOp(r,filtro.op)&&cumpleDir(r,k)).length]);
   const grupo = (titulo, clave, arr)=>
     `<div class="fgrupo"><span class="muted">${titulo}</span>${arr.map(([k,t,n])=>
       `<button class="fb ${filtro[clave]===k?'on':''}" aria-pressed="${filtro[clave]===k}" data-clave="${clave}" data-v="${k}">${t} (${n})</button>`).join('')}</div>`;
   const el = document.getElementById('filtros');
   el.innerHTML = grupo('Operativa','op',ops) + grupo('Dirección','dir',dirs)
     + (hayFiltro() ? `<button class="fb reset" id="fReset">Quitar filtros</button>` : '')
-    + `<span class="muted fcuenta">Mostrando ${VIS.length} de ${ROWS.length} días</span>`;
+    + `<span class="muted fcuenta">Mostrando ${VIS.length} de ${delMes.length} días de ${MESES[vista.m]}</span>`;
   el.querySelectorAll('[data-clave]').forEach(b=>{
     b.onclick = ()=>{ filtro[b.dataset.clave] = b.dataset.v; renderTodo(); };
   });
@@ -257,7 +265,7 @@ function renderFiltros(){
 /* ---------- KPIs ---------- */
 function balanceInicioMes(){
   const corte = new Date(vista.y, vista.m, 1);
-  const antes = VIS.filter(r=>parseFecha(r.fecha) < corte);
+  const antes = ALL.filter(r=>parseFecha(r.fecha) < corte);
   return antes.length ? antes[antes.length-1].finV : CUENTA_INICIAL;
 }
 
@@ -265,25 +273,30 @@ function renderKpis(){
   const filtrado = hayFiltro();
   const verEst  = filtro.op!=='ajustes';
   const verDisc = filtro.op!=='estrategia';
-  const balActual = VIS.length ? VIS[VIS.length-1].finV : CUENTA_INICIAL;
-  const acumulado = (balActual-CUENTA_INICIAL)/CUENTA_INICIAL*100;
+  const balIni = balanceInicioMes();
   const sumEst  = VIS.reduce((a,r)=>a+r.estV,0);
   const sumDisc = VIS.reduce((a,r)=>a+r.discV,0);
-  const nota = filtrado ? 'Balance simulado: cuenta inicial más el resultado de los días filtrados' : '';
+  const balFin = balIni + sumEst + sumDisc;
+  const pct = balIni ? (balFin-balIni)/balIni*100 : 0;
+  const nota = filtrado ? 'Balance simulado: balance de inicio de mes más el resultado de los días filtrados' : '';
   const k = [
-    [filtrado?'Balance filtrado':'Balance actual', f2(balActual), '', nota],
-    ['Resultado acumulado', `${acumulado.toFixed(2)} %`, signo(acumulado), nota],
-    ['Estrategia (acumulado)', verEst ? f2(sumEst) : '—', verEst ? signo(sumEst) : 'off', ''],
-    ['Discrecional (acumulado)', verDisc ? f2(sumDisc) : '—', verDisc ? signo(sumDisc) : 'off', ''],
-    ['Días en la vista', `${VIS.length} de ${ROWS.length}`, '', '']
+    [filtrado?'Balance final filtrado':'Balance final', f2(balFin), '', nota],
+    ['Resultado del mes', `${pct.toFixed(2)} %`, signo(pct), nota],
+    ['Estrategia (mes)', verEst ? f2(sumEst) : '—', verEst ? signo(sumEst) : 'off', ''],
+    ['Discrecional (mes)', verDisc ? f2(sumDisc) : '—', verDisc ? signo(sumDisc) : 'off', ''],
+    ['Días en la vista', `${VIS.length} de ${ROWS.filter(enMes).length}`, '', '']
   ];
   document.getElementById('kpis').innerHTML =
-    `<div class="kpi"><small>Balance inicial (${MESES[vista.m]})</small><b>${f2(balanceInicioMes())}</b></div>` +
+    `<div class="kpi"><small>Balance inicial (${MESES[vista.m]})</small><b>${f2(balIni)}</b></div>` +
     k.map(([t,v,c,n])=>`<div class="kpi" ${n?`title="${n}"`:''}><small>${t}</small><b class="${c}">${v}</b></div>`).join('');
 }
 
 /* ---------- Estadísticas ---------- */
 function renderStats(){
+  if(!VIS.length){
+    document.getElementById('stats').innerHTML = `<div style="grid-column:1/-1"><small>${ROWS.some(enMes) ? 'Ningún día cumple este filtro' : 'Sin datos en este mes'}</small></div>`;
+    return;
+  }
   const senales = VIS.length;
   const tp = VIS.filter(r=>r.resultado==='TP').length;
   const diasOp = VIS.filter(r=>r.operaron).length;
@@ -339,6 +352,12 @@ function acumulados(){
 }
 
 function renderGrafica(){
+  if(!VIS.length){
+    document.getElementById('grafica').innerHTML = `<text x="300" y="130" fill="#8a96b0" font-size="13" text-anchor="middle">${ROWS.some(enMes) ? 'Ningún día cumple este filtro' : 'Sin datos en este mes'}</text>`;
+    document.getElementById('leyenda').innerHTML = '';
+    document.getElementById('tip').style.display = 'none';
+    return;
+  }
   const W=600, H=260, pL=48, pR=12, pT=14, pB=30;
   const pts = acumulados();
   const activos = SERIES.filter(s=>serieVis[s.k] && serieRelevante(s.k));
@@ -597,8 +616,8 @@ try{ indexedDB.deleteDatabase('diario-nas100'); }catch(e){}
 
 document.getElementById('cerrar').onclick = ()=>document.getElementById('modal').classList.remove('open');
 document.getElementById('modal').onclick = e=>{ if(e.target.id==='modal') e.currentTarget.classList.remove('open'); };
-document.getElementById('prev').onclick = ()=>{ vista.m--; if(vista.m<0){vista.m=11;vista.y--;} renderCalendario(); };
-document.getElementById('next').onclick = ()=>{ vista.m++; if(vista.m>11){vista.m=0;vista.y++;} renderCalendario(); };
+document.getElementById('prev').onclick = ()=>{ vista.m--; if(vista.m<0){vista.m=11;vista.y--;} renderTodo(); };
+document.getElementById('next').onclick = ()=>{ vista.m++; if(vista.m>11){vista.m=0;vista.y++;} renderTodo(); };
 
 
 renderTodo();
