@@ -111,7 +111,7 @@ button:focus-visible{outline:2px solid var(--blue);outline-offset:2px}
   </div>
 
   <div class="card">
-    <h2>Acumulado: estrategia, ajustes y total (US$)</h2>
+    <h2>Acumulado: estrategia, ajustes y total (US$ y %)</h2>
     <div id="wrap" style="position:relative">
       <svg id="grafica" viewBox="0 0 600 260"></svg>
       <div id="tip" style="display:none;position:absolute;pointer-events:none;background:#0f1420;border:1px solid #2a3550;border-radius:8px;padding:8px 10px;font-size:12px;line-height:1.5;white-space:nowrap"></div>
@@ -345,19 +345,22 @@ function renderStats(){
 const SERIES = [
   {k:'e', nombre:'Estrategia', color:'#3b82f6'},
   {k:'d', nombre:'Ajustes',    color:'#f1c40f'},
-  {k:'t', nombre:'Total',      color:'#2ecc71'}
+  {k:'t', nombre:'Total',      color:'#2ecc71'},
+  {k:'p', nombre:'% acumulado', color:'#b388ff'}
 ];
-let serieVis = {e:true, d:true, t:true};
+let serieVis = {e:true, d:true, t:true, p:true};
 
 // Con el filtro "Estrategia" solo aplica la serie Estrategia; con "Ajustes", solo Ajustes
 function serieRelevante(k){
+  if(k==='p') return true;   // el % acumulado del mes aplica con cualquier filtro
   return k==='e' ? filtro.op!=='ajustes' : k==='d' ? filtro.op!=='estrategia' : filtro.op==='todas';
 }
 
 function acumulados(){
   let ce = 0, cd = 0;
-  const pts = [{f:'Inicio', e:0, d:0, t:0}];
-  VIS.forEach(r=>{ ce += r.estV; cd += r.discV; pts.push({f:r.fecha, e:ce, d:cd, t:ce+cd, r}); });
+  const b0 = balanceInicioMes() || 1;   // % sobre el balance de inicio de mes (igual que el KPI)
+  const pts = [{f:'Inicio', e:0, d:0, t:0, p:0}];
+  VIS.forEach(r=>{ ce += r.estV; cd += r.discV; pts.push({f:r.fecha, e:ce, d:cd, t:ce+cd, p:(ce+cd)/b0*100, r}); });
   return pts;
 }
 
@@ -368,10 +371,11 @@ function renderGrafica(){
     document.getElementById('tip').style.display = 'none';
     return;
   }
-  const W=600, H=260, pL=48, pR=12, pT=14, pB=30;
+  const W=600, H=260, pL=48, pR=50, pT=14, pB=30;
   const pts = acumulados();
+  const b0 = balanceInicioMes() || 1;
   const activos = SERIES.filter(s=>serieVis[s.k] && serieRelevante(s.k));
-  const vals = [0, ...pts.flatMap(p=>activos.map(s=>p[s.k]))];
+  const vals = [0, ...pts.flatMap(p=>activos.map(s=>s.k==='p' ? p.t : p[s.k]))];
   let min = Math.min(...vals), max = Math.max(...vals);
   const pad = Math.max((max-min)*0.12, 0.5);
   min -= pad; max += pad;
@@ -385,6 +389,9 @@ function renderGrafica(){
     const yy = Y(v).toFixed(1);
     svg += `<line x1="${pL}" x2="${W-pR}" y1="${yy}" y2="${yy}" stroke="#2a3550"/>
             <text x="${pL-6}" y="${(+yy+4).toFixed(1)}" fill="#8a96b0" font-size="10" text-anchor="end">${v.toFixed(2)}</text>`;
+    if(activos.some(s=>s.k==='p')){
+      svg += `<text x="${W-pR+6}" y="${(+yy+4).toFixed(1)}" fill="#b388ff" font-size="10" text-anchor="start">${(v/b0*100).toFixed(2)}%</text>`;
+    }
   }
   const y0 = Y(0).toFixed(1);
   svg += `<line x1="${pL}" x2="${W-pR}" y1="${y0}" y2="${y0}" stroke="#8a96b0" stroke-dasharray="4 4"/>`;
@@ -393,10 +400,12 @@ function renderGrafica(){
     svg += `<text x="${X(i).toFixed(1)}" y="${H-10}" fill="#8a96b0" font-size="10" text-anchor="middle">${etiqueta}</text>`;
   });
   activos.forEach(s=>{
-    const linea = pts.map((p,i)=>`${X(i).toFixed(1)},${Y(p[s.k]).toFixed(1)}`).join(' ');
-    svg += `<polyline points="${linea}" fill="none" stroke="${s.color}" stroke-width="2.5"/>`;
+    const esPct = s.k==='p';
+    const kk = esPct ? 't' : s.k;   // el % usa la misma escala vertical: el eje derecho es el eje izquierdo convertido a %
+    const linea = pts.map((p,i)=>`${X(i).toFixed(1)},${Y(p[kk]).toFixed(1)}`).join(' ');
+    svg += `<polyline points="${linea}" fill="none" stroke="${s.color}" stroke-width="${esPct?2:2.5}"${esPct?' stroke-dasharray="6 4"':''}/>`;
     pts.forEach((p,i)=>{
-      svg += `<circle cx="${X(i).toFixed(1)}" cy="${Y(p[s.k]).toFixed(1)}" r="3.5" fill="${s.color}"/>`;
+      svg += `<circle cx="${X(i).toFixed(1)}" cy="${Y(p[kk]).toFixed(1)}" r="${esPct?2.5:3.5}" fill="${s.color}"/>`;
     });
   });
   if(!VIS.length){
@@ -434,7 +443,7 @@ function renderGrafica(){
     guia.setAttribute('visibility', 'visible');
     const p = pts[idx];
     const lineas = SERIES.filter(s=>serieRelevante(s.k))
-      .map(s=>`<span style="color:${s.color}">${s.nombre}: ${p[s.k].toFixed(2)}</span>`).join('<br>');
+      .map(s=>`<span style="color:${s.color}">${s.nombre}: ${s.k==='p' ? p.p.toFixed(2)+' %' : p[s.k].toFixed(2)}</span>`).join('<br>');
     const dia = p.r
       ? `<br><span style="color:#8a96b0">${p.r.direccion||'—'} · ${p.r.resultado} · día ${p.r.plV>=0?'+':''}${f2(p.r.plV)}<br>Clic para abrir el día</span>`
       : '';
