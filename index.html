@@ -75,11 +75,8 @@ th{color:var(--muted);font-weight:500;width:45%}
 .kpi b.off{color:var(--muted)}
 .leg:disabled{cursor:not-allowed}
 button:focus-visible{outline:2px solid var(--blue);outline-offset:2px}
-.carga{display:flex;gap:10px 14px;flex-wrap:wrap;align-items:center;padding:14px 24px 0}
-.btn{position:relative;background:var(--line);color:var(--text);border-radius:8px;padding:8px 14px;cursor:pointer;font-size:14px}
-.btn:hover{background:#34405f}
-.btn:focus-within{outline:2px solid var(--blue);outline-offset:2px}
-.btn input{position:absolute;inset:0;opacity:0;width:100%;cursor:pointer}
+#msg{padding:12px 24px 0}
+#msg:empty{display:none}
 </style>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 </head>
@@ -94,12 +91,7 @@ button:focus-visible{outline:2px solid var(--blue);outline-offset:2px}
   </div>
 </header>
 
-<section class="carga">
-  <label class="btn">Cargar Excel<input type="file" id="archivo" accept=".xlsx"></label>
-  <span id="msg" class="muted"></span>
-  <label class="btn">Cargar capturas<input type="file" id="fotosInput" accept="image/*" multiple></label>
-  <span id="msgFotos" class="muted"></span>
-</section>
+<div id="msg" class="muted"></div>
 
 <section class="fbar" id="filtros"></section>
 
@@ -492,17 +484,6 @@ function cargarFotos(fecha){
   const c = fecha.replace(/-/g, '');
   const cont = document.getElementById('fotos');
   const msg = document.getElementById('fotos-msg');
-  const loc = FOTOS_LOCAL[c];
-  if(loc && loc.length){
-    loc.forEach((f,i)=>{
-      const img = new Image();
-      img.alt = `Captura ${i+1}`;
-      img.src = f.url;
-      cont.appendChild(img);
-    });
-    msg.textContent = `Capturas cargadas en este navegador: ${loc.length}`;
-    return;
-  }
   const bases = ['', '_01', '_02', '_03'].map(s=>`${CARPETA_FOTOS}NAS100_${c}${s}`);
   const exts = ['png','jpg','jpeg','PNG','JPG'];
   let hallados = 0, pendientes = bases.length;
@@ -559,12 +540,12 @@ function abrir(fecha){
 }
 
 function cargarFilas(filas, balanceExcel){
-  const msg = document.getElementById('msg');
   DATA = filas;
   renderTodo();
   const ultimo = ROWS[ROWS.length-1].fin;
   const coincide = balanceExcel!==null && Math.abs(ultimo-balanceExcel) < 0.005;
-  msg.innerHTML = `Cargados ${filas.length} días. Balance final Excel: ${f2(balanceExcel)} · panel: ${f2(ultimo)} ${coincide ? '✔' : '⚠ revisa el balance inicial'}`;
+  document.getElementById('msg').textContent = coincide ? '' :
+    `⚠ El balance final del Excel (${f2(balanceExcel)}) no coincide con el del panel (${f2(ultimo)}). Revisa el balance inicial.`;
 }
 
 function procesarLibro(buf){
@@ -600,16 +581,6 @@ function procesarLibro(buf){
   cargarFilas(filas, balanceExcel);
 }
 
-document.getElementById('archivo').onchange = async e=>{
-  const archivo = e.target.files[0];
-  if(!archivo) return;
-  try{
-    procesarLibro(await archivo.arrayBuffer());
-  }catch(err){
-    document.getElementById('msg').textContent = 'No pude leer el archivo. Revisa que sea el Magic_Number.xlsx actualizado.';
-  }
-};
-
 // Carga automática: si Magic_Number.xlsx está en la misma carpeta del panel, se lee al abrirlo
 async function cargarDesdeRepo(){
   try{
@@ -617,67 +588,12 @@ async function cargarDesdeRepo(){
     if(!r.ok) return;
     procesarLibro(await r.arrayBuffer());
   }catch(err){
-    // Si se abre desde el disco (file://) no se puede leer; queda la carga manual
+    // Si se abre desde el disco (file://) no se puede leer el Excel; se usan los datos del archivo
   }
 }
 
-/* ---------- Capturas cargadas desde el panel ----------
-   Se guardan en IndexedDB: quedan en este navegador y este equipo, no en GitHub. */
-const FOTOS_LOCAL = {};   // 'AAAAMMDD' -> [{orden, url, nombre}]
-let dbFotos = null;
-
-function abrirDB(){
-  return new Promise(res=>{
-    try{
-      const rq = indexedDB.open('diario-nas100', 1);
-      rq.onupgradeneeded = ()=>rq.result.createObjectStore('fotos');
-      rq.onsuccess = ()=>res(rq.result);
-      rq.onerror = ()=>res(null);
-    }catch(e){ res(null); }
-  });
-}
-
-function claveFoto(nombre){
-  const m = String(nombre).match(/(\d{4})-?(\d{2})-?(\d{2})(?:_(\d+))?/);
-  return m ? {dia:`${m[1]}${m[2]}${m[3]}`, orden: m[4] ? parseInt(m[4],10) : 0} : null;
-}
-
-function registrarFoto(nombre, blob){
-  const k = claveFoto(nombre);
-  if(!k) return false;
-  const lista = FOTOS_LOCAL[k.dia] = (FOTOS_LOCAL[k.dia]||[]).filter(f=>f.orden!==k.orden);
-  lista.push({orden:k.orden, url:URL.createObjectURL(blob), nombre});
-  lista.sort((a,b)=>a.orden-b.orden);
-  return true;
-}
-
-function guardarFoto(nombre, blob){
-  if(!dbFotos) return;
-  try{ dbFotos.transaction('fotos','readwrite').objectStore('fotos').put(blob, nombre); }catch(e){}
-}
-
-async function iniciarFotos(){
-  dbFotos = await abrirDB();
-  if(!dbFotos) return;
-  await new Promise(res=>{
-    try{
-      const rq = dbFotos.transaction('fotos').objectStore('fotos').openCursor();
-      rq.onsuccess = ()=>{ const c = rq.result; if(c){ registrarFoto(c.key, c.value); c.continue(); } else res(); };
-      rq.onerror = ()=>res();
-    }catch(e){ res(); }
-  });
-}
-
-document.getElementById('fotosInput').onchange = e=>{
-  const msg = document.getElementById('msgFotos');
-  let ok = 0; const mal = [];
-  [...e.target.files].forEach(f=>{
-    if(registrarFoto(f.name, f)){ ok++; guardarFoto(f.name, f); } else mal.push(f.name);
-  });
-  msg.innerHTML = `Cargadas ${ok} capturas ${dbFotos ? '(guardadas en este navegador)' : '(solo para esta sesión)'}.`
-    + (mal.length ? ` Sin fecha en el nombre: ${mal.map(esc).join(', ')}.` : '');
-  e.target.value = '';
-};
+// Limpia capturas que se hubieran guardado en este navegador con una versión anterior del panel
+try{ indexedDB.deleteDatabase('diario-nas100'); }catch(e){}
 
 document.getElementById('cerrar').onclick = ()=>document.getElementById('modal').classList.remove('open');
 document.getElementById('modal').onclick = e=>{ if(e.target.id==='modal') e.currentTarget.classList.remove('open'); };
@@ -686,7 +602,6 @@ document.getElementById('next').onclick = ()=>{ vista.m++; if(vista.m>11){vista.
 
 
 renderTodo();
-iniciarFotos();
 cargarDesdeRepo();
 </script>
 </body>
