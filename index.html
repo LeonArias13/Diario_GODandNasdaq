@@ -67,6 +67,7 @@ th{color:var(--muted);font-weight:500;width:45%}
 .leg{background:#141b2b;color:var(--text);display:inline-flex;align-items:center;gap:6px;border:1px solid var(--line)}
 .leg.off{opacity:.35}
 </style>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 </head>
 <body>
 
@@ -82,7 +83,9 @@ th{color:var(--muted);font-weight:500;width:45%}
 <section style="padding:12px 24px 0">
   <details class="card">
     <summary style="cursor:pointer;font-weight:600">Actualizar desde Excel</summary>
-    <p class="muted">En Excel selecciona las filas de los días (de la fecha a Observaciones, sin el encabezado), copia con Ctrl+C y pégalas aquí.</p>
+    <p class="muted"><b>Opción fácil:</b> elige el archivo Magic_Number.xlsx de tu computadora.</p>
+    <input type="file" id="archivo" accept=".xlsx" style="margin-bottom:10px">
+    <p class="muted">También puedes pegar filas. En Excel selecciona las filas de los días (de la fecha a Observaciones, sin el encabezado), copia con Ctrl+C y pégalas aquí.</p>
     <textarea id="pegado" rows="5" style="width:100%;background:#141b2b;color:var(--text);border:1px solid var(--line);border-radius:8px;padding:8px;font-family:inherit"></textarea>
     <div style="margin-top:8px;display:flex;gap:10px;align-items:center;flex-wrap:wrap">
       <button id="cargar">Cargar datos</button>
@@ -493,6 +496,69 @@ document.getElementById('cargar').onclick = ()=>{
   msg.innerHTML = `Cargados ${filas.length} días. Balance final Excel: ${f2(balanceExcel)} · panel: ${f2(ultimo)} ${coincide ? '✔' : '⚠ revisa el balance inicial'}`;
 };
 
+function cargarFilas(filas, balanceExcel){
+  const msg = document.getElementById('msg');
+  DATA = filas;
+  renderTodo();
+  const ultimo = ROWS[ROWS.length-1].fin;
+  const coincide = balanceExcel!==null && Math.abs(ultimo-balanceExcel) < 0.005;
+  msg.innerHTML = `Cargados ${filas.length} días. Balance final Excel: ${f2(balanceExcel)} · panel: ${f2(ultimo)} ${coincide ? '✔' : '⚠ revisa el balance inicial'}`;
+}
+
+function procesarLibro(buf){
+  const msg = document.getElementById('msg');
+  const wb = XLSX.read(buf, {type:'array'});
+  const ws = wb.Sheets['Diario Completo Leo'];
+  if(!ws){ msg.textContent = 'No encontré la hoja "Diario Completo Leo" en ese archivo.'; return; }
+  const rows = XLSX.utils.sheet_to_json(ws, {header:1, raw:true, defval:null});
+  const numv = v=>{
+    if(typeof v === 'number') return v;
+    if(v===null || v===undefined || String(v).trim()==='') return null;
+    const n = parseFloat(String(v).replace(',', '.'));
+    return isNaN(n) ? null : n;
+  };
+  const filas = [];
+  let balanceExcel = null;
+  rows.forEach(c=>{
+    const x = c[0];
+    if(typeof x !== 'number') return;
+    const dt = new Date(Math.round((x - 25569) * 86400000));
+    const fecha = `${dt.getUTCFullYear()}-${String(dt.getUTCMonth()+1).padStart(2,'0')}-${String(dt.getUTCDate()).padStart(2,'0')}`;
+    filas.push({
+      fecha,
+      resultado: String(c[3]||'').trim().toUpperCase(),
+      direccion: String(c[4]||'').trim().toUpperCase() || null,
+      estrategia: numv(c[5]),
+      ajustes: [6,7,8,9].map(i=>numv(c[i])).filter(v=>v!==null),
+      obs: String(c[14]||'').trim()
+    });
+    balanceExcel = numv(c[10]);
+  });
+  if(!filas.length){ msg.textContent = 'No encontré días en la hoja.'; return; }
+  cargarFilas(filas, balanceExcel);
+}
+
+document.getElementById('archivo').onchange = async e=>{
+  const archivo = e.target.files[0];
+  if(!archivo) return;
+  try{
+    procesarLibro(await archivo.arrayBuffer());
+  }catch(err){
+    document.getElementById('msg').textContent = 'No pude leer el archivo. Revisa que sea el Magic_Number.xlsx actualizado.';
+  }
+};
+
+// Carga automática: si Magic_Number.xlsx está en la misma carpeta del panel, se lee al abrirlo
+async function cargarDesdeRepo(){
+  try{
+    const r = await fetch('Magic_Number.xlsx', {cache:'no-store'});
+    if(!r.ok) return;
+    procesarLibro(await r.arrayBuffer());
+  }catch(err){
+    // Si se abre desde el disco (file://) no se puede leer; queda la carga manual
+  }
+}
+
 document.getElementById('cerrar').onclick = ()=>document.getElementById('modal').classList.remove('open');
 document.getElementById('modal').onclick = e=>{ if(e.target.id==='modal') e.currentTarget.classList.remove('open'); };
 document.getElementById('prev').onclick = ()=>{ vista.m--; if(vista.m<0){vista.m=11;vista.y--;} renderCalendario(); };
@@ -503,6 +569,7 @@ renderKpis();
 renderCalendario();
 renderGrafica();
 renderStats();
+cargarDesdeRepo();
 </script>
 </body>
 </html>
