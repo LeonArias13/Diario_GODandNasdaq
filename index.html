@@ -66,6 +66,15 @@ th{color:var(--muted);font-weight:500;width:45%}
 .leyenda{display:flex;gap:8px;margin-top:10px;flex-wrap:wrap}
 .leg{background:#141b2b;color:var(--text);display:inline-flex;align-items:center;gap:6px;border:1px solid var(--line)}
 .leg.off{opacity:.35}
+.fbar{position:sticky;top:0;z-index:5;background:var(--bg);border-bottom:1px solid var(--line);padding:10px 24px;display:flex;gap:10px 22px;flex-wrap:wrap;align-items:center}
+.fgrupo{display:flex;gap:6px;align-items:center;flex-wrap:wrap}
+.fb.reset{background:transparent;border-color:var(--line);color:var(--muted)}
+.fcuenta{margin-left:auto}
+.day.dim{opacity:.35}
+.day.dim:hover{opacity:.75}
+.kpi b.off{color:var(--muted)}
+.leg:disabled{cursor:not-allowed}
+button:focus-visible{outline:2px solid var(--blue);outline-offset:2px}
 </style>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 </head>
@@ -85,6 +94,12 @@ th{color:var(--muted);font-weight:500;width:45%}
     <summary style="cursor:pointer;font-weight:600">Actualizar desde Excel</summary>
     <p class="muted"><b>Opción fácil:</b> elige el archivo Magic_Number.xlsx de tu computadora.</p>
     <input type="file" id="archivo" accept=".xlsx" style="margin-bottom:10px">
+    <p class="muted"><b>Capturas:</b> elige las imágenes de los días. El nombre debe llevar la fecha, por ejemplo NAS100_20261020.png (y _01, _02 si hay varias del mismo día). Se guardan en este navegador.</p>
+    <input type="file" id="fotosInput" accept="image/*" multiple style="margin-bottom:10px">
+    <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-bottom:10px">
+      <button id="borrarFotos">Borrar capturas guardadas</button>
+      <span id="msgFotos" class="muted"></span>
+    </div>
     <p class="muted">También puedes pegar filas. En Excel selecciona las filas de los días (de la fecha a Observaciones, sin el encabezado), copia con Ctrl+C y pégalas aquí.</p>
     <textarea id="pegado" rows="5" style="width:100%;background:#141b2b;color:var(--text);border:1px solid var(--line);border-radius:8px;padding:8px;font-family:inherit"></textarea>
     <div style="margin-top:8px;display:flex;gap:10px;align-items:center;flex-wrap:wrap">
@@ -94,12 +109,13 @@ th{color:var(--muted);font-weight:500;width:45%}
   </details>
 </section>
 
+<section class="fbar" id="filtros"></section>
+
 <section class="kpis" id="kpis"></section>
 
 <section class="grid">
   <div class="card">
     <h2>Calendario</h2>
-    <div class="filtros" id="filtros"></div>
     <div class="cal" id="cal"></div>
     <div class="legend">
       <span><i class="dot" style="background:rgba(46,204,113,.5)"></i>TP de estrategia</span>
@@ -202,61 +218,118 @@ construirFilas();
 
 function renderTodo(){
   construirFilas();
-  renderKpis();
-  renderCalendario();
+  aplicarFiltro();
+  renderFiltros();
+  renderCalendario();   // también actualiza los KPIs
   renderGrafica();
   renderStats();
 }
 
+/* ---------- Filtro global ----------
+   op:  todas | estrategia | ajustes        dir: todas | SELL | BUY
+   KPIs, calendario, gráfica y estadísticas se calculan solo con VIS:
+   los días que cumplen el filtro, con el balance recalculado sobre esos días. */
+const MESES=['enero','febrero','marzo','abril','mayo','junio','julio','agosto','septiembre','octubre','noviembre','diciembre'];
+let vista = (()=>{ const u=parseFecha(ROWS[ROWS.length-1].fecha); return {y:u.getFullYear(), m:u.getMonth()}; })();
+let filtro = {op:'todas', dir:'todas'};
+let VIS = [];
+let VMAP = {};
+
+function cumpleOp(r, op){ return op==='estrategia' ? r.operoEstrategia : op==='ajustes' ? r.nAjustes>0 : true; }
+function cumpleDir(r, dir){ return dir==='todas' || r.direccion===dir; }
+function hayFiltro(){ return filtro.op!=='todas' || filtro.dir!=='todas'; }
+
+function aplicarFiltro(){
+  let bal = CUENTA_INICIAL;
+  VIS = ROWS.filter(r=>cumpleOp(r,filtro.op) && cumpleDir(r,filtro.dir)).map(r=>{
+    const estV  = filtro.op==='ajustes'    ? 0 : r.est;
+    const discV = filtro.op==='estrategia' ? 0 : r.disc;
+    const iniV = bal;
+    bal = iniV + estV + discV;
+    return {...r, estV, discV, iniV, finV:bal, plV:estV+discV};
+  });
+  VMAP = Object.fromEntries(VIS.map(r=>[r.fecha,r]));
+}
+
+function renderFiltros(){
+  const ops = [['todas','Todas'],['estrategia','Estrategia'],['ajustes','Ajustes']]
+    .map(([k,t])=>[k,t,ROWS.filter(r=>cumpleOp(r,k)&&cumpleDir(r,filtro.dir)).length]);
+  const dirs = [['todas','Ambas'],['SELL','▼ SELL'],['BUY','▲ BUY']]
+    .map(([k,t])=>[k,t,ROWS.filter(r=>cumpleOp(r,filtro.op)&&cumpleDir(r,k)).length]);
+  const grupo = (titulo, clave, arr)=>
+    `<div class="fgrupo"><span class="muted">${titulo}</span>${arr.map(([k,t,n])=>
+      `<button class="fb ${filtro[clave]===k?'on':''}" aria-pressed="${filtro[clave]===k}" data-clave="${clave}" data-v="${k}">${t} (${n})</button>`).join('')}</div>`;
+  const el = document.getElementById('filtros');
+  el.innerHTML = grupo('Operativa','op',ops) + grupo('Dirección','dir',dirs)
+    + (hayFiltro() ? `<button class="fb reset" id="fReset">Quitar filtros</button>` : '')
+    + `<span class="muted fcuenta">Mostrando ${VIS.length} de ${ROWS.length} días</span>`;
+  el.querySelectorAll('[data-clave]').forEach(b=>{
+    b.onclick = ()=>{ filtro[b.dataset.clave] = b.dataset.v; renderTodo(); };
+  });
+  const rs = document.getElementById('fReset');
+  if(rs) rs.onclick = ()=>{ filtro = {op:'todas', dir:'todas'}; renderTodo(); };
+}
+
 /* ---------- KPIs ---------- */
 function balanceInicioMes(){
-  const delMes = ROWS.filter(r=>{
-    const f = parseFecha(r.fecha);
-    return f.getFullYear()===vista.y && f.getMonth()===vista.m;
-  });
-  if(delMes.length) return delMes[0].ini;
-  const previos = ROWS.filter(r=>{
-    const f = parseFecha(r.fecha);
-    return f < new Date(vista.y, vista.m, 1);
-  });
-  return previos.length ? previos[previos.length-1].fin : CUENTA_INICIAL;
+  const corte = new Date(vista.y, vista.m, 1);
+  const antes = VIS.filter(r=>parseFecha(r.fecha) < corte);
+  return antes.length ? antes[antes.length-1].finV : CUENTA_INICIAL;
 }
 
 function renderKpis(){
-  const ultimo = ROWS[ROWS.length-1];
-  const balActual = ultimo.fin;
+  const filtrado = hayFiltro();
+  const verEst  = filtro.op!=='ajustes';
+  const verDisc = filtro.op!=='estrategia';
+  const balActual = VIS.length ? VIS[VIS.length-1].finV : CUENTA_INICIAL;
   const acumulado = (balActual-CUENTA_INICIAL)/CUENTA_INICIAL*100;
-  const sumEst = ROWS.reduce((a,r)=>a+r.est,0);
-  const sumDisc = ROWS.reduce((a,r)=>a+r.disc,0);
+  const sumEst  = VIS.reduce((a,r)=>a+r.estV,0);
+  const sumDisc = VIS.reduce((a,r)=>a+r.discV,0);
+  const nota = filtrado ? 'Balance simulado: cuenta inicial más el resultado de los días filtrados' : '';
   const k = [
-    ['Balance actual', f2(balActual), ''],
-    ['Resultado acumulado', `${acumulado.toFixed(2)} %`, signo(acumulado)],
-    ['Estrategia (acumulado)', f2(sumEst), signo(sumEst)],
-    ['Discrecional (acumulado)', f2(sumDisc), signo(sumDisc)]
+    [filtrado?'Balance filtrado':'Balance actual', f2(balActual), '', nota],
+    ['Resultado acumulado', `${acumulado.toFixed(2)} %`, signo(acumulado), nota],
+    ['Estrategia (acumulado)', verEst ? f2(sumEst) : '—', verEst ? signo(sumEst) : 'off', ''],
+    ['Discrecional (acumulado)', verDisc ? f2(sumDisc) : '—', verDisc ? signo(sumDisc) : 'off', ''],
+    ['Días en la vista', `${VIS.length} de ${ROWS.length}`, '', '']
   ];
-  document.getElementById('kpis').innerHTML = `<div class="kpi"><small>Balance inicial (${MESES[vista.m]})</small><b>${f2(balanceInicioMes())}</b></div>` + k.map(([t,v,c])=>
-    `<div class="kpi"><small>${t}</small><b class="${c}">${v}</b></div>`).join('');
+  document.getElementById('kpis').innerHTML =
+    `<div class="kpi"><small>Balance inicial (${MESES[vista.m]})</small><b>${f2(balanceInicioMes())}</b></div>` +
+    k.map(([t,v,c,n])=>`<div class="kpi" ${n?`title="${n}"`:''}><small>${t}</small><b class="${c}">${v}</b></div>`).join('');
 }
 
 /* ---------- Estadísticas ---------- */
 function renderStats(){
-  const senales = ROWS.length;
-  const tp = ROWS.filter(r=>r.resultado==='TP').length;
-  const diasOp = ROWS.filter(r=>r.operaron).length;
-  const excedidos = ROWS.filter(r=>r.nAjustes>MAX_AJUSTES).length;
-  const ganadoresEst = ROWS.filter(r=>r.operoEstrategia && r.est>0).length;
-  const perdedoresEst = ROWS.filter(r=>r.operoEstrategia && r.est<0).length;
-  const porDir = ['SELL','BUY'].map(dir=>{
-    const rs = ROWS.filter(r=>r.direccion===dir);
+  const senales = VIS.length;
+  const tp = VIS.filter(r=>r.resultado==='TP').length;
+  const diasOp = VIS.filter(r=>r.operaron).length;
+
+  let etiquetaGP, valorGP;
+  if(filtro.op==='ajustes'){
+    const aj = VIS.flatMap(r=>r.ajustes);
+    etiquetaGP = 'Ajustes: ganadores / perdedores';
+    valorGP = `${aj.filter(a=>a>0).length} / ${aj.filter(a=>a<0).length}`;
+  } else {
+    etiquetaGP = 'Estrategia: ganadoras / perdedoras';
+    valorGP = `${VIS.filter(r=>r.operoEstrategia && r.estV>0).length} / ${VIS.filter(r=>r.operoEstrategia && r.estV<0).length}`;
+  }
+
+  const excedidos = VIS.filter(r=>r.nAjustes>MAX_AJUSTES).length;
+  const excTxt = filtro.op==='estrategia' ? '—' : `<span class="${excedidos?'neg':''}">${excedidos}</span>`;
+
+  const dirs = filtro.dir==='todas' ? ['SELL','BUY'] : [filtro.dir];
+  const porDir = dirs.map(dir=>{
+    const rs = VIS.filter(r=>r.direccion===dir);
     const tpD = rs.filter(r=>r.resultado==='TP').length;
     const txt = rs.length ? `${((tpD/rs.length)*100).toFixed(0)} % (${tpD} de ${rs.length})` : 'sin datos';
     return `<div><small>Acierto ${dir}</small>${txt}</div>`;
   }).join('');
+
   document.getElementById('stats').innerHTML = `
     <div><small>Acierto de la señal</small>${senales?((tp/senales)*100).toFixed(0):0} % (${tp} TP de ${senales})</div>
     <div><small>Días operados</small>${diasOp} de ${senales}</div>
-    <div><small>Estrategia: ganadoras / perdedoras</small>${ganadoresEst} / ${perdedoresEst}</div>
-    <div><small>Días con más de ${MAX_AJUSTES} ajustes</small><span class="${excedidos?'neg':''}">${excedidos}</span></div>
+    <div><small>${etiquetaGP}</small>${valorGP}</div>
+    <div><small>Días con más de ${MAX_AJUSTES} ajustes</small>${excTxt}</div>
     ${porDir}
   `;
 }
@@ -269,17 +342,22 @@ const SERIES = [
 ];
 let serieVis = {e:true, d:true, t:true};
 
+// Con el filtro "Estrategia" solo aplica la serie Estrategia; con "Ajustes", solo Ajustes
+function serieRelevante(k){
+  return k==='e' ? filtro.op!=='ajustes' : k==='d' ? filtro.op!=='estrategia' : filtro.op==='todas';
+}
+
 function acumulados(){
   let ce = 0, cd = 0;
   const pts = [{f:'Inicio', e:0, d:0, t:0}];
-  ROWS.forEach(r=>{ ce += r.est; cd += r.disc; pts.push({f:r.fecha, e:ce, d:cd, t:ce+cd}); });
+  VIS.forEach(r=>{ ce += r.estV; cd += r.discV; pts.push({f:r.fecha, e:ce, d:cd, t:ce+cd, r}); });
   return pts;
 }
 
 function renderGrafica(){
   const W=600, H=260, pL=48, pR=12, pT=14, pB=30;
   const pts = acumulados();
-  const activos = SERIES.filter(s=>serieVis[s.k]);
+  const activos = SERIES.filter(s=>serieVis[s.k] && serieRelevante(s.k));
   const vals = [0, ...pts.flatMap(p=>activos.map(s=>p[s.k]))];
   let min = Math.min(...vals), max = Math.max(...vals);
   const pad = Math.max((max-min)*0.12, 0.5);
@@ -308,15 +386,20 @@ function renderGrafica(){
       svg += `<circle cx="${X(i).toFixed(1)}" cy="${Y(p[s.k]).toFixed(1)}" r="3.5" fill="${s.color}"/>`;
     });
   });
+  if(!VIS.length){
+    svg += `<text x="${W/2}" y="${H/2}" fill="#8a96b0" font-size="13" text-anchor="middle">Ningún día cumple este filtro</text>`;
+  }
   svg += `<line id="guia" x1="0" x2="0" y1="${pT}" y2="${H-pB}" stroke="#e6ebf5" stroke-opacity=".4" visibility="hidden"/>`;
-  svg += `<rect id="area" x="${pL}" y="${pT}" width="${W-pL-pR}" height="${H-pT-pB}" fill="transparent"/>`;
+  svg += `<rect id="area" x="${pL}" y="${pT}" width="${W-pL-pR}" height="${H-pT-pB}" fill="transparent" style="cursor:pointer"/>`;
 
   const svgEl = document.getElementById('grafica');
   svgEl.innerHTML = svg;
 
-  document.getElementById('leyenda').innerHTML = SERIES.map(s=>
-    `<button class="leg ${serieVis[s.k]?'':'off'}" data-k="${s.k}"><i class="dot" style="background:${s.color}"></i>${s.nombre}</button>`
-  ).join('');
+  document.getElementById('leyenda').innerHTML = SERIES.map(s=>{
+    const aplica = serieRelevante(s.k);
+    const off = !aplica || !serieVis[s.k];
+    return `<button class="leg ${off?'off':''}" data-k="${s.k}" ${aplica?'':'disabled title="No aplica con este filtro"'}><i class="dot" style="background:${s.color}"></i>${s.nombre}</button>`;
+  }).join('');
   document.querySelectorAll('#leyenda .leg').forEach(b=>{
     b.onclick = ()=>{ serieVis[b.dataset.k] = !serieVis[b.dataset.k]; renderGrafica(); };
   });
@@ -325,54 +408,45 @@ function renderGrafica(){
   const guia = document.getElementById('guia');
   const tip  = document.getElementById('tip');
   const wrap = document.getElementById('wrap');
-  area.onmousemove = ev=>{
+  const idxDe = ev=>{
     const rect = svgEl.getBoundingClientRect();
-    const wr = wrap.getBoundingClientRect();
     const px = (ev.clientX-rect.left)/rect.width*W;
-    const idx = Math.max(0, Math.min(pts.length-1, Math.round((px-pL)/paso)));
+    return Math.max(0, Math.min(pts.length-1, Math.round((px-pL)/paso)));
+  };
+  area.onmousemove = ev=>{
+    const wr = wrap.getBoundingClientRect();
+    const idx = idxDe(ev);
     const gx = X(idx).toFixed(1);
     guia.setAttribute('x1', gx); guia.setAttribute('x2', gx);
     guia.setAttribute('visibility', 'visible');
     const p = pts[idx];
-    tip.innerHTML = `<b>${p.f==='Inicio' ? 'Inicio' : p.f}</b><br>
-      <span style="color:#3b82f6">Estrategia: ${p.e.toFixed(2)}</span><br>
-      <span style="color:#f1c40f">Ajustes: ${p.d.toFixed(2)}</span><br>
-      <span style="color:#2ecc71">Total: ${p.t.toFixed(2)}</span>`;
+    const lineas = SERIES.filter(s=>serieRelevante(s.k))
+      .map(s=>`<span style="color:${s.color}">${s.nombre}: ${p[s.k].toFixed(2)}</span>`).join('<br>');
+    const dia = p.r
+      ? `<br><span style="color:#8a96b0">${p.r.direccion||'—'} · ${p.r.resultado} · día ${p.r.plV>=0?'+':''}${f2(p.r.plV)}<br>Clic para abrir el día</span>`
+      : '';
+    tip.innerHTML = `<b>${p.f==='Inicio' ? 'Inicio' : p.f}</b><br>${lineas}${dia}`;
     tip.style.display = 'block';
     const left = ev.clientX - wr.left + 14;
-    tip.style.left = Math.min(left, wr.width-150) + 'px';
+    tip.style.left = Math.min(left, wr.width-170) + 'px';
     tip.style.top  = Math.max(0, ev.clientY - wr.top - 20) + 'px';
   };
   area.onmouseleave = ()=>{
     guia.setAttribute('visibility', 'hidden');
     tip.style.display = 'none';
   };
+  area.onclick = ev=>{
+    const p = pts[idxDe(ev)];
+    if(p.r) abrir(p.f);
+  };
 }
 
 /* ---------- Calendario ---------- */
-let vista = (()=>{ const u=parseFecha(ROWS[ROWS.length-1].fecha); return {y:u.getFullYear(), m:u.getMonth()}; })();
-const MESES=['enero','febrero','marzo','abril','mayo','junio','julio','agosto','septiembre','octubre','noviembre','diciembre'];
-let calFiltro = 'todas';
-
-function renderFiltros(){
-  const opciones = [
-    ['todas', 'Todas', ROWS.length],
-    ['estrategia', 'Estrategia', ROWS.filter(r=>r.operoEstrategia).length],
-    ['ajustes', 'Ajustes', ROWS.filter(r=>r.nAjustes>0).length]
-  ];
-  document.getElementById('filtros').innerHTML = opciones.map(([k,t,n])=>
-    `<button class="fb ${calFiltro===k?'on':''}" data-tipo="${k}">${t} (${n})</button>`
-  ).join('');
-  document.querySelectorAll('#filtros [data-tipo]').forEach(b=>{
-    b.onclick = ()=>{ calFiltro = b.dataset.tipo; renderCalendario(); };
-  });
-}
-
 function renderCalendario(){
   document.getElementById('mes').textContent = `${MESES[vista.m]} ${vista.y}`;
-  renderFiltros();
   renderKpis();
-  const soloEstrategia = calFiltro==='estrategia';
+  const verEst  = filtro.op!=='ajustes';
+  const verDisc = filtro.op!=='estrategia';
   const primero = new Date(vista.y, vista.m, 1);
   const inicio = (primero.getDay()+6)%7;
   const diasMes = new Date(vista.y, vista.m+1, 0).getDate();
@@ -386,27 +460,30 @@ function renderCalendario(){
       html += `<div class="day"><div class="n">${d}</div></div>`;
       continue;
     }
-    if(calFiltro==='ajustes' && r.nAjustes===0){
-      html += `<div class="day out"><div class="n">${d}</div></div>`;
-      continue;
-    }
-    const ini = soloEstrategia ? r.iniE : r.ini;
+    const v = VMAP[clave];
     const dirHTML = r.direccion
       ? `<span class="dir ${r.direccion==='SELL'?'sell':'buy'}">${r.direccion==='SELL'?'▼ SELL':'▲ BUY'}</span>`
       : `<span class="dir none">sin dato</span>`;
-    const clase = `day has ${r.resultado==='TP'?'tp':'sl'} ${r.operoEstrategia?'':'filtrado'}`;
-    const flag = (!soloEstrategia && r.nAjustes>MAX_AJUSTES) ? `<span class="flag">⚠</span>` : '';
-    const plE = r.operoEstrategia
-      ? `<div class="pl ${signo(r.est)}">E ${r.est>=0?'+':''}${f2(r.est)}</div>`
-      : `<div class="pl muted">sin operar</div>`;
-    const plA = (!soloEstrategia && r.nAjustes)
+    const tpsl = r.resultado==='TP' ? 'tp' : 'sl';
+    const resHTML = `<div class="res ${r.resultado==='TP'?'pos':'neg'}">${r.resultado}</div>`;
+
+    // Día fuera del filtro: se atenúa, pero se puede abrir
+    if(!v){
+      html += `<div class="day has dim ${tpsl}" data-f="${clave}"><div class="n">${d}</div>${dirHTML}${resHTML}</div>`;
+      continue;
+    }
+    const clase = `day has ${tpsl} ${r.operoEstrategia?'':'filtrado'}`;
+    const flag = (verDisc && r.nAjustes>MAX_AJUSTES) ? `<span class="flag">⚠</span>` : '';
+    const plE = !verEst ? ''
+      : r.operoEstrategia
+        ? `<div class="pl ${signo(r.est)}">E ${r.est>=0?'+':''}${f2(r.est)}</div>`
+        : `<div class="pl muted">sin operar</div>`;
+    const plA = (verDisc && r.nAjustes)
       ? `<div class="pl ${signo(r.disc)}">A ${r.disc>=0?'+':''}${f2(r.disc)}</div>`
       : '';
     html += `<div class="${clase}" data-f="${clave}">${flag}<div class="n">${d}</div>
-             <div class="ini muted">Ini ${f2(ini)}</div>
-             ${dirHTML}
-             <div class="res ${r.resultado==='TP'?'pos':'neg'}">${r.resultado}</div>
-             ${plE}${plA}</div>`;
+             <div class="ini muted">Ini ${f2(v.iniV)}</div>
+             ${dirHTML}${resHTML}${plE}${plA}</div>`;
   }
   const cal = document.getElementById('cal');
   cal.innerHTML = html;
@@ -415,15 +492,47 @@ function renderCalendario(){
 
 /* ---------- Detalle del día ---------- */
 function fotosHTML(fecha){
-  const compacta = fecha.replace(/-/g, '');              // 2026-10-20 -> 20261020
-  const nombres = [`NAS100_${compacta}`, `NAS100_${compacta}_01`, `NAS100_${compacta}_02`, `NAS100_${compacta}_03`];
-  const slots = nombres.map((n,i)=>{
-    const base = CARPETA_FOTOS + n;
-    return `<img src="${base}.png" alt="Captura ${i+1}"
-      onerror="if(!this.dataset.j){this.dataset.j=1;this.src='${base}.jpg';}else{this.remove();}">`;
-  }).join('');
-  return `<div class="photos">${slots}</div>
-          <p class="muted">Las capturas deben estar en la misma carpeta que este archivo con el nombre NAS100_${compacta}.png (o NAS100_${compacta}_01.png, _02, etc.).</p>`;
+  return `<div class="photos" id="fotos"></div><p class="muted" id="fotos-msg">Buscando capturas…</p>`;
+}
+
+// Busca NAS100_AAAAMMDD, _01, _02, _03 en png, jpg, jpeg (también en mayúsculas)
+function cargarFotos(fecha){
+  const c = fecha.replace(/-/g, '');
+  const cont = document.getElementById('fotos');
+  const msg = document.getElementById('fotos-msg');
+  const loc = FOTOS_LOCAL[c];
+  if(loc && loc.length){
+    loc.forEach((f,i)=>{
+      const img = new Image();
+      img.alt = `Captura ${i+1}`;
+      img.src = f.url;
+      cont.appendChild(img);
+    });
+    msg.textContent = `Capturas cargadas en este navegador: ${loc.length}`;
+    return;
+  }
+  const bases = ['', '_01', '_02', '_03'].map(s=>`${CARPETA_FOTOS}NAS100_${c}${s}`);
+  const exts = ['png','jpg','jpeg','PNG','JPG'];
+  let hallados = 0, pendientes = bases.length;
+  const fin = ()=>{
+    if(--pendientes>0) return;
+    msg.innerHTML = hallados
+      ? `Capturas: NAS100_${c}.png, _01, _02, _03`
+      : `No encontré capturas de este día. Busco <b>NAS100_${c}.png</b> (o .jpg) en la misma carpeta que este archivo, junto a <i>${esc(location.href.split('?')[0].replace(/[^\/]*$/, ''))}</i>`;
+  };
+  bases.forEach((base,i)=>{
+    const slot = document.createElement('div');
+    cont.appendChild(slot);
+    const probar = k=>{
+      if(k>=exts.length){ slot.remove(); fin(); return; }
+      const img = new Image();
+      img.alt = `Captura ${i+1}`;
+      img.onload = ()=>{ slot.replaceWith(img); hallados++; fin(); };
+      img.onerror = ()=>probar(k+1);
+      img.src = `${base}.${exts[k]}`;
+    };
+    probar(0);
+  });
 }
 
 function abrir(fecha){
@@ -454,6 +563,7 @@ function abrir(fecha){
     ${fotosHTML(fecha)}
   `;
   document.getElementById('modal').classList.add('open');
+  cargarFotos(fecha);
 }
 
 function leerExcel(texto){
@@ -559,16 +669,79 @@ async function cargarDesdeRepo(){
   }
 }
 
+/* ---------- Capturas cargadas desde el panel ----------
+   Se guardan en IndexedDB: quedan en este navegador y este equipo, no en GitHub. */
+const FOTOS_LOCAL = {};   // 'AAAAMMDD' -> [{orden, url, nombre}]
+let dbFotos = null;
+
+function abrirDB(){
+  return new Promise(res=>{
+    try{
+      const rq = indexedDB.open('diario-nas100', 1);
+      rq.onupgradeneeded = ()=>rq.result.createObjectStore('fotos');
+      rq.onsuccess = ()=>res(rq.result);
+      rq.onerror = ()=>res(null);
+    }catch(e){ res(null); }
+  });
+}
+
+function claveFoto(nombre){
+  const m = String(nombre).match(/(\d{4})-?(\d{2})-?(\d{2})(?:_(\d+))?/);
+  return m ? {dia:`${m[1]}${m[2]}${m[3]}`, orden: m[4] ? parseInt(m[4],10) : 0} : null;
+}
+
+function registrarFoto(nombre, blob){
+  const k = claveFoto(nombre);
+  if(!k) return false;
+  const lista = FOTOS_LOCAL[k.dia] = (FOTOS_LOCAL[k.dia]||[]).filter(f=>f.orden!==k.orden);
+  lista.push({orden:k.orden, url:URL.createObjectURL(blob), nombre});
+  lista.sort((a,b)=>a.orden-b.orden);
+  return true;
+}
+
+function guardarFoto(nombre, blob){
+  if(!dbFotos) return;
+  try{ dbFotos.transaction('fotos','readwrite').objectStore('fotos').put(blob, nombre); }catch(e){}
+}
+
+async function iniciarFotos(){
+  dbFotos = await abrirDB();
+  if(!dbFotos) return;
+  await new Promise(res=>{
+    try{
+      const rq = dbFotos.transaction('fotos').objectStore('fotos').openCursor();
+      rq.onsuccess = ()=>{ const c = rq.result; if(c){ registrarFoto(c.key, c.value); c.continue(); } else res(); };
+      rq.onerror = ()=>res();
+    }catch(e){ res(); }
+  });
+}
+
+document.getElementById('fotosInput').onchange = e=>{
+  const msg = document.getElementById('msgFotos');
+  let ok = 0; const mal = [];
+  [...e.target.files].forEach(f=>{
+    if(registrarFoto(f.name, f)){ ok++; guardarFoto(f.name, f); } else mal.push(f.name);
+  });
+  msg.innerHTML = `Cargadas ${ok} capturas ${dbFotos ? '(guardadas en este navegador)' : '(solo para esta sesión)'}.`
+    + (mal.length ? ` Sin fecha en el nombre: ${mal.map(esc).join(', ')}.` : '');
+  e.target.value = '';
+};
+
+document.getElementById('borrarFotos').onclick = ()=>{
+  Object.values(FOTOS_LOCAL).flat().forEach(f=>URL.revokeObjectURL(f.url));
+  Object.keys(FOTOS_LOCAL).forEach(k=>delete FOTOS_LOCAL[k]);
+  try{ if(dbFotos) dbFotos.transaction('fotos','readwrite').objectStore('fotos').clear(); }catch(e){}
+  document.getElementById('msgFotos').textContent = 'Capturas guardadas borradas de este navegador.';
+};
+
 document.getElementById('cerrar').onclick = ()=>document.getElementById('modal').classList.remove('open');
 document.getElementById('modal').onclick = e=>{ if(e.target.id==='modal') e.currentTarget.classList.remove('open'); };
 document.getElementById('prev').onclick = ()=>{ vista.m--; if(vista.m<0){vista.m=11;vista.y--;} renderCalendario(); };
 document.getElementById('next').onclick = ()=>{ vista.m++; if(vista.m>11){vista.m=0;vista.y++;} renderCalendario(); };
 
 
-renderKpis();
-renderCalendario();
-renderGrafica();
-renderStats();
+renderTodo();
+iniciarFotos();
 cargarDesdeRepo();
 </script>
 </body>
