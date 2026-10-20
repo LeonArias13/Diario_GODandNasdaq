@@ -75,6 +75,11 @@ th{color:var(--muted);font-weight:500;width:45%}
 .kpi b.off{color:var(--muted)}
 .leg:disabled{cursor:not-allowed}
 button:focus-visible{outline:2px solid var(--blue);outline-offset:2px}
+.carga{display:flex;gap:10px 14px;flex-wrap:wrap;align-items:center;padding:14px 24px 0}
+.btn{position:relative;background:var(--line);color:var(--text);border-radius:8px;padding:8px 14px;cursor:pointer;font-size:14px}
+.btn:hover{background:#34405f}
+.btn:focus-within{outline:2px solid var(--blue);outline-offset:2px}
+.btn input{position:absolute;inset:0;opacity:0;width:100%;cursor:pointer}
 </style>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 </head>
@@ -89,24 +94,11 @@ button:focus-visible{outline:2px solid var(--blue);outline-offset:2px}
   </div>
 </header>
 
-<section style="padding:12px 24px 0">
-  <details class="card">
-    <summary style="cursor:pointer;font-weight:600">Actualizar desde Excel</summary>
-    <p class="muted"><b>Opción fácil:</b> elige el archivo Magic_Number.xlsx de tu computadora.</p>
-    <input type="file" id="archivo" accept=".xlsx" style="margin-bottom:10px">
-    <p class="muted"><b>Capturas:</b> elige las imágenes de los días. El nombre debe llevar la fecha, por ejemplo NAS100_20261020.png (y _01, _02 si hay varias del mismo día). Se guardan en este navegador.</p>
-    <input type="file" id="fotosInput" accept="image/*" multiple style="margin-bottom:10px">
-    <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-bottom:10px">
-      <button id="borrarFotos">Borrar capturas guardadas</button>
-      <span id="msgFotos" class="muted"></span>
-    </div>
-    <p class="muted">También puedes pegar filas. En Excel selecciona las filas de los días (de la fecha a Observaciones, sin el encabezado), copia con Ctrl+C y pégalas aquí.</p>
-    <textarea id="pegado" rows="5" style="width:100%;background:#141b2b;color:var(--text);border:1px solid var(--line);border-radius:8px;padding:8px;font-family:inherit"></textarea>
-    <div style="margin-top:8px;display:flex;gap:10px;align-items:center;flex-wrap:wrap">
-      <button id="cargar">Cargar datos</button>
-      <span id="msg" class="muted"></span>
-    </div>
-  </details>
+<section class="carga">
+  <label class="btn">Cargar Excel<input type="file" id="archivo" accept=".xlsx"></label>
+  <span id="msg" class="muted"></span>
+  <label class="btn">Cargar capturas<input type="file" id="fotosInput" accept="image/*" multiple></label>
+  <span id="msgFotos" class="muted"></span>
 </section>
 
 <section class="fbar" id="filtros"></section>
@@ -566,46 +558,6 @@ function abrir(fecha){
   cargarFotos(fecha);
 }
 
-function leerExcel(texto){
-  const num = v=>{
-    v = (v||'').trim();
-    if(v==='') return null;
-    const n = v.includes(',') ? parseFloat(v.replace(/\./g,'').replace(',','.')) : parseFloat(v);
-    return isNaN(n) ? null : n;
-  };
-  const filas = [];
-  let balanceExcel = null;
-  texto.split(/\r?\n/).forEach(linea=>{
-    const c = linea.split('\t');
-    const m = (c[0]||'').trim().match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})$/);
-    if(!m) return;
-    filas.push({
-      fecha: `${m[3]}-${m[2].padStart(2,'0')}-${m[1].padStart(2,'0')}`,
-      resultado: (c[3]||'').trim().toUpperCase(),
-      direccion: (c[4]||'').trim().toUpperCase() || null,
-      estrategia: num(c[5]),
-      ajustes: [6,7,8,9].map(i=>num(c[i])).filter(v=>v!==null),
-      obs: (c[14]||'').trim()
-    });
-    balanceExcel = num(c[10]);
-  });
-  return {filas, balanceExcel};
-}
-
-document.getElementById('cargar').onclick = ()=>{
-  const msg = document.getElementById('msg');
-  const {filas, balanceExcel} = leerExcel(document.getElementById('pegado').value);
-  if(!filas.length){
-    msg.textContent = 'No encontré días. Revisa que copiaste las filas con fecha en formato dd/mm/aaaa.';
-    return;
-  }
-  DATA = filas;
-  renderTodo();
-  const ultimo = ROWS[ROWS.length-1].fin;
-  const coincide = balanceExcel!==null && Math.abs(ultimo-balanceExcel) < 0.005;
-  msg.innerHTML = `Cargados ${filas.length} días. Balance final Excel: ${f2(balanceExcel)} · panel: ${f2(ultimo)} ${coincide ? '✔' : '⚠ revisa el balance inicial'}`;
-};
-
 function cargarFilas(filas, balanceExcel){
   const msg = document.getElementById('msg');
   DATA = filas;
@@ -725,13 +677,6 @@ document.getElementById('fotosInput').onchange = e=>{
   msg.innerHTML = `Cargadas ${ok} capturas ${dbFotos ? '(guardadas en este navegador)' : '(solo para esta sesión)'}.`
     + (mal.length ? ` Sin fecha en el nombre: ${mal.map(esc).join(', ')}.` : '');
   e.target.value = '';
-};
-
-document.getElementById('borrarFotos').onclick = ()=>{
-  Object.values(FOTOS_LOCAL).flat().forEach(f=>URL.revokeObjectURL(f.url));
-  Object.keys(FOTOS_LOCAL).forEach(k=>delete FOTOS_LOCAL[k]);
-  try{ if(dbFotos) dbFotos.transaction('fotos','readwrite').objectStore('fotos').clear(); }catch(e){}
-  document.getElementById('msgFotos').textContent = 'Capturas guardadas borradas de este navegador.';
 };
 
 document.getElementById('cerrar').onclick = ()=>document.getElementById('modal').classList.remove('open');
