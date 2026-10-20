@@ -49,6 +49,8 @@ table{width:100%;border-collapse:collapse;font-size:14px}
 td,th{padding:7px 8px;border-bottom:1px solid var(--line);text-align:left}
 th{color:var(--muted);font-weight:500;width:45%}
 .obs{background:#141b2b;border-radius:8px;padding:10px;font-size:14px;line-height:1.5;margin-top:12px}
+.concepto{background:rgba(241,196,15,.10);border-left:3px solid var(--gold);border-radius:8px;padding:10px 12px;font-size:14px;line-height:1.5;margin-top:10px}
+.concepto b{color:var(--gold)}
 .warn{background:rgba(241,196,15,.12);border:1px solid rgba(241,196,15,.45);padding:8px 10px;border-radius:8px;font-size:13px;margin-top:10px}
 .photos{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:10px;margin-top:10px}
 .photos img{width:100%;border-radius:8px;border:1px solid var(--line)}
@@ -135,6 +137,7 @@ button:focus-visible{outline:2px solid var(--blue);outline-offset:2px}
    - resultado: "TP" o "SL" (desenlace de la estrategia)
    - estrategia: número si operaste la estrategia (0 = BE), null si no operaste
    - ajustes: lista de ajustes discrecionales del día ([] si no hubo)
+   - concepto: frase del día (columna "Concepto" del Excel); se muestra tal cual en el detalle
    Cada día nuevo: agrega una línea al final del arreglo.
    Capturas: carpeta "fotos" junto a este archivo, nombradas 2026-10-20_01.png, _02, etc.
    ========================================================== */
@@ -142,19 +145,26 @@ let CUENTA_INICIAL = 520.02;
 
 let DATA = [
   {fecha:"2026-10-12", direccion:"SELL", resultado:"TP", estrategia:4.26, ajustes:[],
-   obs:"Mercado con ruido, se ingresa a la operación asegurando un 50% y dejando correr, cierra SL positivo, se devuelve precio a Compra"},
+   obs:"Mercado con ruido, se ingresa a la operación asegurando un 50% y dejando correr, cierra SL positivo, se devuelve precio a Compra",
+   concepto:"Proteger primero: con ruido, asegurar el 50% y dejar correr; el mercado paga después."},
   {fecha:"2026-10-13", direccion:"SELL", resultado:"SL", estrategia:0, ajustes:[],
-   obs:"Ruido en Ventas, se asegura entrada inmediatamente queda en positivo se devuelve a SL"},
+   obs:"Ruido en Ventas, se asegura entrada inmediatamente queda en positivo se devuelve a SL",
+   concepto:"Salir en cero también es ganar: en el ruido se asegura de inmediato y, si el precio se devuelve, la gestión ya hizo su trabajo."},
   {fecha:"2026-10-14", direccion:"SELL", resultado:"SL", estrategia:null, ajustes:[],
-   obs:"PPA 300, SL Ahorrado"},
+   obs:"PPA 300, SL Ahorrado",
+   concepto:"No operar es una operación: con PPA 300 la señal pierde su ventaja y el SL ahorrado es capital protegido."},
   {fecha:"2026-10-15", direccion:"SELL", resultado:"SL", estrategia:null, ajustes:[],
-   obs:"PPA 135, SL Ahorrado"},
+   obs:"PPA 135, SL Ahorrado",
+   concepto:"La constancia en la regla: segundo SL ahorrado seguido (PPA 135); el filtro cuida la cuenta aunque no se vea."},
   {fecha:"2026-10-16", direccion:"SELL", resultado:"TP", estrategia:null, ajustes:[],
-   obs:"PA 59, TP"},
+   obs:"PA 59, TP",
+   concepto:"La regla se juzga en la serie, no en un día: PA 59 dejó fuera un TP que corrió hasta 1:4 y aun así se respeta el filtro."},
   {fecha:"2026-10-19", direccion:"SELL", resultado:"SL", estrategia:-5.73, ajustes:[0,0],
-   obs:"Apertura con ruido en compra, se abre la venta pero se devuelve el precio, tranquilo sin expectativa, se hacen ajustes quedan todos en protección en el retroceso de la vela"},
+   obs:"Apertura con ruido en compra, se abre la venta pero se devuelve el precio, tranquilo sin expectativa, se hacen ajustes quedan todos en protección en el retroceso de la vela",
+   concepto:"Operar sin expectativa: si el precio se devuelve, proteger en el retroceso de la vela y aceptar la pérdida controlada."},
   {fecha:"2026-10-20", direccion:"SELL", resultado:"TP", estrategia:null, ajustes:[0,-1.96,2.5],
-   obs:"PPA 141, se hacen 3 ajustes, por impulso se hace el tercero aunque se gano esa ultima debo respetar que maximo 2 operaciones, se hay estrategia un ajuste sino maximo 2 ajustes diarios (DISCIPLINA)"}
+   obs:"PPA 141, se hacen 3 ajustes, por impulso se hace el tercero aunque se gano esa ultima debo respetar que maximo 2 operaciones, se hay estrategia un ajuste sino maximo 2 ajustes diarios (DISCIPLINA)",
+   concepto:"Ganar por impulso no es disciplina: el tercer ajuste salió positivo, pero el límite de 2 ajustes no se negocia."}
 ];
 
 const MAX_AJUSTES = 2;          // límite del plan
@@ -551,6 +561,7 @@ function abrir(fecha){
     </table>
     ${alertas.map(a=>`<div class="warn">⚠ ${esc(a)}</div>`).join('')}
     <div class="obs"><b>Observación:</b> ${esc(r.obs)}</div>
+    ${r.concepto ? `<div class="concepto"><b>Concepto:</b> ${esc(r.concepto)}</div>` : ''}
     <h2 style="margin-top:16px">Capturas</h2>
     ${fotosHTML(fecha)}
   `;
@@ -592,7 +603,8 @@ function procesarLibro(buf){
       direccion: String(c[4]||'').trim().toUpperCase() || null,
       estrategia: numv(c[5]),
       ajustes: [6,7,8,9].map(i=>numv(c[i])).filter(v=>v!==null),
-      obs: String(c[14]||'').trim()
+      obs: String(c[14]||'').trim(),
+      concepto: String(c[15]||'').trim()
     });
     balanceExcel = numv(c[10]);
   });
