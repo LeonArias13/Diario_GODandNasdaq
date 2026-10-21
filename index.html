@@ -77,6 +77,16 @@ th{color:var(--muted);font-weight:500;width:45%}
 .kpi b.off{color:var(--muted)}
 .leg:disabled{cursor:not-allowed}
 button:focus-visible{outline:2px solid var(--blue);outline-offset:2px}
+.photos img{cursor:zoom-in}
+#visor{position:fixed;inset:0;background:rgba(0,0,0,.94);display:none;z-index:30}
+#visor.open{display:flex}
+#visor-marco{width:100%;height:100%;display:flex;align-items:center;justify-content:center;overflow:auto}
+#visor-img{display:block;max-width:100vw;max-height:100vh;width:auto;height:auto;object-fit:contain;cursor:zoom-out}
+#visor.real #visor-marco{align-items:flex-start;justify-content:flex-start}
+#visor.real #visor-img{max-width:none;max-height:none}
+#visor-x,#visor-zoom{position:fixed;top:12px;z-index:31;padding:8px 14px;background:rgba(26,34,51,.9)}
+#visor-x{right:12px}
+#visor-zoom{right:64px}
 #msg{padding:12px 24px 0}
 #msg:empty{display:none}
 </style>
@@ -90,6 +100,8 @@ button:focus-visible{outline:2px solid var(--blue);outline-offset:2px}
     <button id="prev">◀</button>
     <span id="mes"></span>
     <button id="next">▶</button>
+    <button id="cargarXlsx" title="Elegir Magic_Number.xlsx desde tu computador">Cargar Excel</button>
+    <input type="file" id="archivoXlsx" accept=".xlsx,.xlsm" hidden>
   </div>
 </header>
 
@@ -164,7 +176,10 @@ let DATA = [
    concepto:"Operar sin expectativa: si el precio se devuelve, proteger en el retroceso de la vela y aceptar la pérdida controlada."},
   {fecha:"2026-10-20", direccion:"SELL", resultado:"TP", estrategia:null, ajustes:[0,-1.96,2.5],
    obs:"PPA 141, se hacen 3 ajustes, por impulso se hace el tercero aunque se gano esa ultima debo respetar que maximo 2 operaciones, se hay estrategia un ajuste sino maximo 2 ajustes diarios (DISCIPLINA)",
-   concepto:"Ganar por impulso no es disciplina: el tercer ajuste salió positivo, pero el límite de 2 ajustes no se negocia."}
+   concepto:"Ganar por impulso no es disciplina: el tercer ajuste salió positivo, pero el límite de 2 ajustes no se negocia."},
+  {fecha:"2026-10-21", direccion:"BUY", resultado:"SL", estrategia:null, ajustes:[0,0.95],
+   obs:"PA 56, No se ingresa por reglas, se hace los ajustes correspondientes",
+   concepto:""}
 ];
 
 const MAX_AJUSTES = 2;          // límite del plan
@@ -538,7 +553,7 @@ function cargarFotos(fecha){
       if(k>=exts.length){ slot.remove(); fin(); return; }
       const img = new Image();
       img.alt = `Captura ${i+1}`;
-      img.onload = ()=>{ slot.replaceWith(img); hallados++; fin(); };
+      img.onload = ()=>{ slot.replaceWith(img); img.onclick = ()=>ampliar(img.src); hallados++; fin(); };
       img.onerror = ()=>probar(k+1);
       img.src = `${base}.${exts[k]}`;
     };
@@ -623,17 +638,51 @@ function procesarLibro(buf){
 
 // Carga automática: si Magic_Number.xlsx está en la misma carpeta del panel, se lee al abrirlo
 async function cargarDesdeRepo(){
+  const aviso = ()=>{
+    document.getElementById('msg').textContent = 'Mostrando los datos guardados en el panel. Para ver el Excel más reciente pulsa "Cargar Excel" y elige Magic_Number.xlsx (abrir el panel con doble clic no permite leer el archivo automáticamente).';
+  };
   try{
     const r = await fetch('Magic_Number.xlsx', {cache:'no-store'});
-    if(!r.ok) return;
+    if(!r.ok){ aviso(); return; }
     procesarLibro(await r.arrayBuffer());
   }catch(err){
-    // Si se abre desde el disco (file://) no se puede leer el Excel; se usan los datos del archivo
+    aviso();
   }
 }
 
+// Carga manual del Excel desde el computador
+document.getElementById('cargarXlsx').onclick = ()=>document.getElementById('archivoXlsx').click();
+document.getElementById('archivoXlsx').onchange = async e=>{
+  const f = e.target.files[0]; if(!f) return;
+  procesarLibro(await f.arrayBuffer());
+  document.getElementById('msg').textContent = `Datos cargados desde ${f.name}.`;
+  e.target.value = '';
+};
+
 // Limpia capturas que se hubieran guardado en este navegador con una versión anterior del panel
 try{ indexedDB.deleteDatabase('diario-nas100'); }catch(e){}
+
+// Visor a pantalla completa para las capturas
+const visor = document.createElement('div');
+visor.id = 'visor';
+visor.innerHTML = '<button id="visor-zoom">Tamaño real</button><button id="visor-x" aria-label="Cerrar">✕</button><div id="visor-marco"><img id="visor-img" alt="Captura ampliada"></div>';
+document.body.appendChild(visor);
+function ampliar(src){
+  document.getElementById('visor-img').src = src;
+  visor.classList.remove('real');
+  document.getElementById('visor-zoom').textContent = 'Tamaño real';
+  visor.classList.add('open');
+}
+function cerrarVisor(){ visor.classList.remove('open'); }
+document.getElementById('visor-x').onclick = cerrarVisor;
+document.getElementById('visor-img').onclick = cerrarVisor;
+document.getElementById('visor-zoom').onclick = e=>{
+  e.stopPropagation();
+  const real = visor.classList.toggle('real');
+  e.currentTarget.textContent = real ? 'Ajustar' : 'Tamaño real';
+};
+visor.addEventListener('click', e=>{ if(e.target===visor || e.target.id==='visor-marco') cerrarVisor(); });
+document.addEventListener('keydown', e=>{ if(e.key==='Escape') cerrarVisor(); });
 
 document.getElementById('cerrar').onclick = ()=>document.getElementById('modal').classList.remove('open');
 document.getElementById('modal').onclick = e=>{ if(e.target.id==='modal') e.currentTarget.classList.remove('open'); };
