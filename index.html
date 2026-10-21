@@ -32,7 +32,7 @@ button:hover{background:#34405f}
 .day.sl{background:rgba(231,76,60,.16);border-color:rgba(231,76,60,.45)}
 .day .n{font-weight:600}
 .day .pl{font-size:12px;margin-top:6px}
-.day .flag{position:absolute;top:4px;right:6px;font-size:12px;color:var(--gold)}
+.day .flag{font-size:12px;color:var(--gold);line-height:1}
 .legend{color:var(--muted);font-size:12px;display:flex;gap:14px;margin-top:12px;flex-wrap:wrap}
 .dot{display:inline-block;width:10px;height:10px;border-radius:3px;margin-right:4px;vertical-align:middle}
 .pos{color:var(--green)}
@@ -89,42 +89,109 @@ button:focus-visible{outline:2px solid var(--blue);outline-offset:2px}
 #visor-zoom{right:64px}
 #msg{padding:12px 24px 0}
 #msg:empty{display:none}
+/* ---- Compacto: todo el panel en una pantalla ---- */
+header{padding:10px 24px}
+h1{font-size:18px}
+#fuente{font-size:11px;font-weight:500;margin-left:10px}
+#fuente.fok{color:var(--green)}
+#fuente.fno{color:var(--gold)}
+.kpis{padding:10px 24px 0;gap:10px}
+.kpi{padding:8px 12px}
+.kpi small{margin-bottom:2px}
+.kpi b{font-size:18px}
+.grid{padding:10px 24px 16px;gap:12px}
+.chead{display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin-bottom:8px}
+.chead h2{margin:0}
+.fb{padding:3px 10px;font-size:12px}
+#fcuenta{margin-left:auto;font-size:12px}
+.lin{display:flex;flex-wrap:wrap;gap:1px 6px;align-items:baseline;margin-top:3px}
+.lin .res,.lin .pl{margin:0}
+.day .ini{font-size:10px;margin-top:1px}
+.legend{gap:4px 12px;font-size:11px;margin-top:8px}
+.stats{gap:8px;margin-top:8px;font-size:13px}
+.stats div{padding:6px 8px}
+.plan .pn{white-space:normal;overflow:visible;text-overflow:clip;line-height:1.35;margin-top:4px}
+.plan{max-width:430px;padding:6px 14px}
+#wrap{position:relative;height:260px}
+#grafica{position:absolute;inset:0;width:100%;height:100%}
+@media (min-width:1000px) and (min-height:600px){
+  html,body{height:100%}
+  body{display:flex;flex-direction:column;overflow:hidden}
+  header,.kpis,#msg{flex:none}
+  #msg{padding-top:6px}
+  .grid{flex:1;min-height:0;grid-template-rows:minmax(0,1fr)}
+  .card{display:flex;flex-direction:column;min-height:0;padding:12px 14px}
+  .card h2{margin:0 0 8px}
+  .chead{flex:none}
+  .cal{flex:1;min-height:0;gap:4px;grid-template-rows:auto;grid-auto-rows:minmax(0,1fr)}
+  .day{min-height:0;overflow:hidden;padding:4px 6px}
+  .legend{flex:none}
+  #wrap{flex:1;height:auto;min-height:0}
+  .leyenda,.stats{flex:none}
+}
+
+.hright{display:flex;gap:16px;align-items:center;flex-wrap:wrap;justify-content:flex-end}
+.plan{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:8px 14px;min-width:250px;max-width:360px}
+.plan .pt{font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.05em}
+.plan .pv{display:flex;align-items:baseline;gap:10px;flex-wrap:wrap}
+.plan .pv b{font-size:24px;color:#7fb0ff}
+.plan .pn{font-size:12px;color:var(--gold);margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.plan .prox{display:flex;gap:6px;flex-wrap:wrap;margin-top:6px}
+.chip{font-size:11px;background:#141b2b;border:1px solid var(--line);border-radius:6px;padding:1px 6px}
+.chip.news{border-color:rgba(241,196,15,.55)}
+.chip.zero{color:var(--muted)}
+.tr{position:absolute;top:4px;right:4px;display:flex;flex-direction:column;align-items:flex-end;gap:1px;text-align:right}
+.pct{font-size:12px;font-weight:600;color:#7fb0ff;white-space:nowrap;line-height:1.2}
+.pct.zero{color:var(--muted);font-weight:400}
+.pct .news{font-size:10px}
+.pct.nw{background:#1e3a8a;color:#fff;border:1px solid #3b82f6;border-radius:6px;padding:0 3px;font-size:10px}
+.plan .pv b.nw{background:#1e3a8a;color:#fff;border:1px solid #3b82f6;border-radius:8px;padding:0 8px}
+.chip.news{background:#1e3a8a;color:#fff}
+.etp{position:absolute;bottom:4px;right:6px;font-size:9px;font-weight:700;color:#0f1420;padding:1px 5px;border-radius:4px;letter-spacing:.03em}
+.etp.lg{position:static;display:inline-block;font-size:11px;padding:2px 7px}
+.noticia{background:rgba(59,130,246,.12);border-left:3px solid var(--blue);border-radius:8px;padding:10px 12px;font-size:14px;line-height:1.5;margin:0 0 12px}
+.noticia b{color:#7fb0ff}
+.pl.desc{font-size:10px;margin-top:8px}
+.pl.rev{color:#fbbf24;font-size:11px}
+.day.revd{border-color:rgba(251,191,36,.5)}
 </style>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 </head>
 <body>
 
 <header>
-  <h1>Diario NAS100 · Cuenta LEO MT4</h1>
+  <h1>Diario NAS100 · Cuenta LEO MT4<span id="fuente"></span></h1>
+  <div class="hright">
+  <div class="plan" id="plan"></div>
   <div class="toolbar">
     <button id="prev">◀</button>
     <span id="mes"></span>
     <button id="next">▶</button>
-    <button id="cargarXlsx" title="Elegir Magic_Number.xlsx desde tu computador">Cargar Excel</button>
-    <input type="file" id="archivoXlsx" accept=".xlsx,.xlsm" hidden>
+  </div>
   </div>
 </header>
 
 <div id="msg" class="muted"></div>
 
-<section class="fbar" id="filtros"></section>
-
 <section class="kpis" id="kpis"></section>
 
 <section class="grid">
   <div class="card">
-    <h2>Calendario</h2>
+    <div class="chead"><h2>Calendario</h2><div class="fgrupo" id="filtros"></div><span class="muted" id="fcuenta"></span></div>
     <div class="cal" id="cal"></div>
     <div class="legend">
       <span><i class="dot" style="background:rgba(46,204,113,.5)"></i>TP de estrategia</span>
       <span><i class="dot" style="background:rgba(231,76,60,.5)"></i>SL de estrategia</span>
       <span><span style="color:var(--gold)">⚠</span> más de 2 ajustes</span>
+      <span><b style="color:#7fb0ff">4 %</b> planeado del día</span>
+      <span>📰 noticia (el plan baja a la mitad)</span>
+      <span id="legEtapas"></span>
     </div>
   </div>
 
   <div class="card">
     <h2>Acumulado: estrategia, ajustes y total (US$ y %)</h2>
-    <div id="wrap" style="position:relative">
+    <div id="wrap">
       <svg id="grafica" viewBox="0 0 600 260"></svg>
       <div id="tip" style="display:none;position:absolute;pointer-events:none;background:#0f1420;border:1px solid #2a3550;border-radius:8px;padding:8px 10px;font-size:12px;line-height:1.5;white-space:nowrap"></div>
     </div>
@@ -156,28 +223,28 @@ button:focus-visible{outline:2px solid var(--blue);outline-offset:2px}
 let CUENTA_INICIAL = 520.02;
 
 let DATA = [
-  {fecha:"2026-10-12", direccion:"SELL", resultado:"TP", estrategia:4.26, ajustes:[],
+  {fecha:"2026-10-12", etapa:"Semilla", direccion:"SELL", resultado:"TP", estrategia:4.26, ajustes:[],
    obs:"Mercado con ruido, se ingresa a la operación asegurando un 50% y dejando correr, cierra SL positivo, se devuelve precio a Compra",
    concepto:"Proteger primero: con ruido, asegurar el 50% y dejar correr; el mercado paga después."},
-  {fecha:"2026-10-13", direccion:"SELL", resultado:"SL", estrategia:0, ajustes:[],
+  {fecha:"2026-10-13", etapa:"Semilla", direccion:"SELL", resultado:"SL", estrategia:0, ajustes:[],
    obs:"Ruido en Ventas, se asegura entrada inmediatamente queda en positivo se devuelve a SL",
    concepto:"Salir en cero también es ganar: en el ruido se asegura de inmediato y, si el precio se devuelve, la gestión ya hizo su trabajo."},
-  {fecha:"2026-10-14", direccion:"SELL", resultado:"SL", estrategia:null, ajustes:[],
+  {fecha:"2026-10-14", etapa:"Semilla", direccion:"SELL", resultado:"SL", estrategia:null, ajustes:[],
    obs:"PPA 300, SL Ahorrado",
    concepto:"No operar es una operación: con PPA 300 la señal pierde su ventaja y el SL ahorrado es capital protegido."},
-  {fecha:"2026-10-15", direccion:"SELL", resultado:"SL", estrategia:null, ajustes:[],
+  {fecha:"2026-10-15", etapa:"Semilla", direccion:"SELL", resultado:"SL", estrategia:null, ajustes:[],
    obs:"PPA 135, SL Ahorrado",
    concepto:"La constancia en la regla: segundo SL ahorrado seguido (PPA 135); el filtro cuida la cuenta aunque no se vea."},
-  {fecha:"2026-10-16", direccion:"SELL", resultado:"TP", estrategia:null, ajustes:[],
+  {fecha:"2026-10-16", etapa:"Semilla", direccion:"SELL", resultado:"TP", estrategia:null, ajustes:[],
    obs:"PA 59, TP",
    concepto:"La regla se juzga en la serie, no en un día: PA 59 dejó fuera un TP que corrió hasta 1:4 y aun así se respeta el filtro."},
-  {fecha:"2026-10-19", direccion:"SELL", resultado:"SL", estrategia:-5.73, ajustes:[0,0],
+  {fecha:"2026-10-19", etapa:"Semilla", direccion:"SELL", resultado:"SL", estrategia:-5.73, ajustes:[0,0],
    obs:"Apertura con ruido en compra, se abre la venta pero se devuelve el precio, tranquilo sin expectativa, se hacen ajustes quedan todos en protección en el retroceso de la vela",
    concepto:"Operar sin expectativa: si el precio se devuelve, proteger en el retroceso de la vela y aceptar la pérdida controlada."},
-  {fecha:"2026-10-20", direccion:"SELL", resultado:"TP", estrategia:null, ajustes:[0,-1.96,2.5],
+  {fecha:"2026-10-20", etapa:"Semilla", direccion:"SELL", resultado:"TP", estrategia:null, ajustes:[0,-1.96,2.5],
    obs:"PPA 141, se hacen 3 ajustes, por impulso se hace el tercero aunque se gano esa ultima debo respetar que maximo 2 operaciones, se hay estrategia un ajuste sino maximo 2 ajustes diarios (DISCIPLINA)",
    concepto:"Ganar por impulso no es disciplina: el tercer ajuste salió positivo, pero el límite de 2 ajustes no se negocia."},
-  {fecha:"2026-10-21", direccion:"BUY", resultado:"SL", estrategia:null, ajustes:[0,0.95],
+  {fecha:"2026-10-21", etapa:"Semilla", direccion:"BUY", resultado:"SL", estrategia:null, ajustes:[0,0.95],
    obs:"PA 56, No se ingresa por reglas, se hace los ajustes correspondientes",
    concepto:""}
 ];
@@ -232,21 +299,247 @@ function renderTodo(){
   renderCalendario();   // también actualiza los KPIs
   renderGrafica();
   renderStats();
+  renderPlan();
+}
+
+const METAS_BASE = [
+  ["2026-10-22",16,"Semilla",2,0.04,0,""],
+  ["2026-10-23",17,"Semilla",1,0.02,0,""],
+  ["2026-10-24",18,"Semilla",0,0,0,""],
+  ["2026-10-25",19,"Semilla",0,0,0,""],
+  ["2026-10-26",20,"Semilla",2,0.04,0,""],
+  ["2026-10-27",21,"Semilla",2,0.04,0,""],
+  ["2026-10-28",22,"Semilla",1,0.01,1,"13:00 Federal Funds Rate, FOMC Statement, FOMC Press Conference"],
+  ["2026-10-29",23,"Semilla",2,0.02,1,"07:30 Advance GDP q/q, Core PCE Price Index m/m"],
+  ["2026-10-30",24,"Semilla",1,0.02,0,""],
+  ["2026-10-31",25,"Semilla",0,0,0,""],
+  ["2026-11-01",26,"Semilla",0,0,0,""],
+  ["2026-11-02",27,"Semilla",2,0.04,0,""],
+  ["2026-11-03",28,"Semilla",2,0.02,1,"Congressional Elections"],
+  ["2026-11-04",29,"Semilla",1,0.02,0,""],
+  ["2026-11-05",30,"Semilla",2,0.04,0,""],
+  ["2026-11-06",31,"Incubación",1,0.0025,1,"08:30 Average Hourly Earnings m/m, Non-Farm Employment Change, Unemployment Rate"],
+  ["2026-11-07",32,"Incubación",0,0,0,""],
+  ["2026-11-08",33,"Incubación",0,0,0,""],
+  ["2026-11-09",34,"Incubación",2,0.01,0,""],
+  ["2026-11-10",35,"Incubación",2,0.005,1,"8:30 Core CPI m/m, Core CPI y/y, CPI m/m, CPI y/y"],
+  ["2026-11-11",36,"Incubación",1,0.0025,1,"Bank Holiday"],
+  ["2026-11-12",37,"Incubación",2,0.01,0,""],
+  ["2026-11-13",38,"Incubación",1,0.0025,1,"08:30 Core PPI m/m, PPI m/m"],
+  ["2026-11-14",39,"Incubación",0,0,0,""],
+  ["2026-11-15",40,"Incubación",0,0,0,""],
+  ["2026-11-16",41,"Incubación",2,0.01,0,""],
+  ["2026-11-17",42,"Incubación",2,0.005,1,"08:30 Core Retail Sales m/m, Retail Sales m/m"],
+  ["2026-11-18",43,"Incubación",1,0.0025,1,"14:00 FOMC Meeting Minutes"],
+  ["2026-11-19",44,"Incubación",2,0.01,0,""],
+  ["2026-11-20",45,"Incubación",1,0.005,0,""],
+  ["2026-11-21",46,"Incubación",0,0,0,""],
+  ["2026-11-22",47,"Incubación",0,0,0,""],
+  ["2026-11-23",48,"Incubación",2,0.01,0,""],
+  ["2026-11-24",49,"Incubación",2,0.01,0,""],
+  ["2026-11-25",50,"Incubación",1,0.0025,1,"08:30 Core PCE Price Index m/m, Prelim GDP q/q"],
+  ["2026-11-26",51,"Incubación",2,0.005,1,"Bank Holiday"],
+  ["2026-11-27",52,"Incubación",1,0.005,0,""],
+  ["2026-11-28",53,"Incubación",0,0,0,""],
+  ["2026-11-29",54,"Incubación",0,0,0,""],
+  ["2026-11-30",55,"Incubación",2,0.01,0,""],
+  ["2026-12-01",56,"Incubación",2,0.01,0,""],
+  ["2026-12-02",57,"Incubación",1,0.005,0,""],
+  ["2026-12-03",58,"Incubación",2,0.01,0,""],
+  ["2026-12-04",59,"Incubación",1,0.005,0,""],
+  ["2026-12-05",60,"Incubación",0,0,0,""],
+  ["2026-12-06",61,"Incubación",0,0,0,""],
+  ["2026-12-07",62,"Incubación",2,0.01,0,""],
+  ["2026-12-08",63,"Incubación",2,0.01,0,""],
+  ["2026-12-09",64,"Incubación",1,0.005,0,""],
+  ["2026-12-10",65,"Incubación",2,0.01,0,""],
+  ["2026-12-11",66,"Incubación",1,0.005,0,""],
+  ["2026-12-12",67,"Incubación",0,0,0,""],
+  ["2026-12-13",68,"Incubación",0,0,0,""],
+  ["2026-12-14",69,"Incubación",2,0.01,0,""],
+  ["2026-12-15",70,"Incubación",2,0.01,0,""],
+  ["2026-12-16",71,"Incubación",1,0.005,0,""],
+  ["2026-12-17",72,"Incubación",2,0.01,0,""],
+  ["2026-12-18",73,"Incubación",1,0.005,0,""],
+  ["2026-12-19",74,"Incubación",0,0,0,""],
+  ["2026-12-20",75,"Incubación",0,0,0,""],
+  ["2026-12-21",76,"Incubación",2,0.01,0,""],
+  ["2026-12-22",77,"Incubación",2,0.01,0,""],
+  ["2026-12-23",78,"Incubación",1,0.005,0,""],
+  ["2026-12-24",79,"Incubación",2,0.01,0,""],
+  ["2026-12-25",80,"Incubación",1,0.005,0,""],
+  ["2026-12-26",81,"Incubación",0,0,0,""],
+  ["2026-12-27",82,"Incubación",0,0,0,""],
+  ["2026-12-28",83,"Incubación",2,0.01,0,""],
+  ["2026-12-29",84,"Incubación",2,0.01,0,""],
+  ["2026-12-30",85,"Incubación",1,0.005,0,""],
+  ["2026-12-31",86,"Incubación",2,0.01,0,""]
+];
+let METAS = {};
+let REVS = {};   // revisiones: días sin operación con observación/capturas (filas del diario sin resultado)
+// ---- Reglas del plan (se leen de las hojas Etapas y Riesgo del Excel; estos valores son el respaldo) ----
+const ETAPAS_BASE = [['Semilla',0.02,30,0.07],['Incubación',0.005,60,0.07],['Aceleración',0.0035,60,0.07],['Pro',0.0035,60,0.07],['Pro 500',0.0035,60,0.07],['Pro M',0.0035,0,0]];   // [etapa, % operación, días de la etapa (0 = sin fin), % a ganar en la etapa (0 = sin objetivo)]
+const RIESGO_BASE = {1:2,2:2,3:1,4:2,5:1,6:0,0:0};   // ratio por día de la semana (0 = domingo)
+const PLAN_HASTA = '2027-12-31';                     // el panel genera el plan hasta esta fecha
+let ETAPAS = ETAPAS_BASE.map(([nombre,op,dias,meta])=>({nombre,op,dias,meta}));
+let RIESGO = {...RIESGO_BASE};
+
+/* Construye el calendario de etapas día por día a partir de las filas del Excel:
+   - Si la fila del Excel trae una Etapa, esa etapa manda ese día (así puedes quedarte un día más en Semilla).
+   - Si no trae etapa, la etapa sigue hasta cumplir sus días y luego pasa a la siguiente (Pro M no termina).
+   - Cada etapa cuenta sus días por separado: la primera conserva el día de la hoja (mañana = día 16) y las demás arrancan en 1.
+   - % planeado = % de la etapa × ratio del día de la semana (a la mitad si hay noticia). */
+function setMetas(arr){
+  METAS = {};
+  const filas = [...arr].sort((a,b)=> a[0]<b[0] ? -1 : a[0]>b[0] ? 1 : 0);
+  if(!filas.length) return;
+  const porFecha = Object.fromEntries(filas.map(a=>[a[0],a]));
+  const orden = ETAPAS.map(e=>e.nombre);
+  const info = n=>ETAPAS.find(e=>e.nombre===n);
+  const ini = filas.find(a=>a[2]) || filas[0];
+  const d = parseFecha(ini[0]), fin = parseFecha(PLAN_HASTA);
+  let etapa = null, dia = 0;
+  while(d<=fin){
+    const k = claveFecha(d), f = porFecha[k];
+    let nueva;
+    if(f && f[2]) nueva = f[2];
+    else {
+      const e = info(etapa);
+      nueva = (e && e.dias>0 && dia>=e.dias) ? orden[Math.min(orden.indexOf(etapa)+1, orden.length-1)] : etapa;
+    }
+    if(etapa===null){ etapa = nueva; dia = ini[1] || 1; }
+    else if(nueva===etapa) dia++;
+    else { etapa = nueva; dia = 1; }
+    const e = info(etapa);
+    const ratio = RIESGO[d.getDay()] || 0;
+    const noticia = f ? f[5] : 0;
+    METAS[k] = {fecha:k, dia, etapa, ratio, plan: e ? e.op*ratio*(noticia>0?0.5:1) : 0, noticia, nota: f ? f[6] : ''};
+    d.setDate(d.getDate()+1);
+  }
+}
+setMetas(METAS_BASE);
+function fmtPlan(v){ return (Math.round(v*10000)/100)+' %'; }
+
+// Lee la hoja "Metas" del Excel (Fecha, Dia Semana, Dia Comienzo Meta, Ratio, Etapa, % Op., % Esperado, % Planeado, Noticia, Nota)
+function leerReglas(wb, n){
+  const filasDe = nombre=> wb.Sheets[nombre] ? XLSX.utils.sheet_to_json(wb.Sheets[nombre], {header:1, raw:true, defval:null}) : [];
+  const et = [];
+  filasDe('Etapas').forEach(c=>{
+    const nom = String(c[0]||'').trim();
+    if(nom && typeof c[1]==='number') et.push({nombre:nom, op:n(c[1]), dias:n(c[3]), meta:n(c[6])});
+  });
+  if(et.length) ETAPAS = et;
+  const dias = {LUNES:1, MARTES:2, 'MIÉRCOLES':3, MIERCOLES:3, JUEVES:4, VIERNES:5, 'SÁBADO':6, SABADO:6, DOMINGO:0};
+  const ri = {};
+  filasDe('Riesgo').forEach(c=>{
+    const k = dias[String(c[0]||'').trim().toUpperCase()];
+    if(k!==undefined && typeof c[1]==='number') ri[k] = c[1];
+  });
+  if(Object.keys(ri).length) RIESGO = {...RIESGO_BASE, ...ri};
+}
+function leerMetas(wb){
+  const ws = wb.Sheets['Metas']; if(!ws) return;
+  const n = v=> typeof v==='number' ? v : (parseFloat(String(v==null?'':v).replace(',','.'))||0);
+  leerReglas(wb, n);
+  const arr = [];
+  XLSX.utils.sheet_to_json(ws, {header:1, raw:true, defval:null}).forEach(c=>{
+    if(typeof c[0] !== 'number') return;
+    const etapa = String(c[4]||'').trim();
+    if(!etapa && !(n(c[8])>0)) return;   // sin etapa solo se guarda si trae noticia
+    const dt = new Date(Math.round((c[0] - 25569) * 86400000));
+    const fecha = `${dt.getUTCFullYear()}-${String(dt.getUTCMonth()+1).padStart(2,'0')}-${String(dt.getUTCDate()).padStart(2,'0')}`;
+    arr.push([fecha, n(c[2]), etapa, n(c[3]), n(c[7]), n(c[8]), String(c[9]||'').trim()]);
+  });
+  if(arr.length) setMetas(arr);
+}
+
+// Recuadro de la esquina superior derecha: solo lo que tiene que ver con mañana
+function renderPlan(){
+  const el = document.getElementById('plan');
+  const t = new Date(); t.setDate(t.getDate()+1);
+  const k = claveFecha(t), m = METAS[k];
+  const fechaTxt = t.toLocaleDateString('es-CO',{weekday:'short',day:'numeric',month:'short'});
+  if(!m){ el.innerHTML = `<div class="pt">% planeado · Mañana · ${esc(fechaTxt)}</div><div class="muted">Sin plan definido para mañana</div>`; return; }
+  el.innerHTML = `
+    <div class="pt">% planeado · Mañana · ${esc(fechaTxt)}</div>
+    <div class="pv"><b class="${m.noticia>0?'nw':''}">${m.plan===0?'Descanso':fmtPlan(m.plan)}</b><span class="muted">${esc(m.etapa)} · día ${m.dia} · ratio ${m.ratio}</span></div>
+    ${m.noticia>0 ? `<div class="pn">📰 ${esc(m.nota||'Noticia')} (plan a la mitad)</div>` : ''}`;
+}
+
+const ETAPA_COL = {'Semilla':'#22d3ee','Incubación':'#a78bfa','Aceleración':'#fb923c','Pro':'#f472b6','Pro 500':'#facc15','Pro M':'#94a3b8'};
+const ETAPA_ABR = {'Semilla':'SEM','Incubación':'INC','Aceleración':'ACE','Pro':'PRO','Pro 500':'P500','Pro M':'PM'};
+function etapaDe(clave){
+  const e = (MAP[clave] && MAP[clave].etapa) || (METAS[clave] && METAS[clave].etapa) || (REVS[clave] && REVS[clave].etapa) || '';
+  if(e) return e;
+  // día sin dato entre días registrados (p. ej. fin de semana pasado): hereda la etapa del día anterior
+  const prev = ROWS.filter(r=>r.fecha<clave && r.etapa);
+  return (prev.length && ROWS.some(r=>r.fecha>clave)) ? prev[prev.length-1].etapa : '';
+}
+function pillEtapa(clave, grande){
+  const e = etapaDe(clave); if(!e) return '';
+  const m = METAS[clave];
+  const tip = `Etapa ${e}${m ? ' · día '+m.dia : ''}`;
+  return `<span class="etp${grande?' lg':''}" style="background:${ETAPA_COL[e]||'#94a3b8'}" title="${esc(tip)}">${esc(ETAPA_ABR[e]||e.slice(0,3).toUpperCase())}</span>`;
+}
+// Esquina superior derecha: alerta ⚠ (si hay) y debajo el % planeado, con 📰 al lado si hay noticia
+function esquina(clave, flagHTML){
+  const m = METAS[clave];
+  const pct = (m && m.plan>0) ? `<div class="pct ${m.plan===0?'zero':''} ${m.noticia>0?'nw':''}" title="${esc(m.etapa+' · día '+m.dia+' · ratio '+m.ratio+(m.noticia>0&&m.nota?' · '+m.nota:''))}">${fmtPlan(m.plan).replace(' %','%')}${m.noticia>0?'<span class="news">📰</span>':''}</div>` : '';
+  return (flagHTML || pct) ? `<div class="tr">${flagHTML||''}${pct}</div>` : '';
+}
+function noticiaHTML(m){
+  if(!m || !(m.noticia>0)) return '';
+  return `<div class="noticia"><b>📰 Noticia:</b> ${esc(m.nota||'Día con noticia')} <span class="muted">· el % planeado baja a la mitad</span></div>`;
+}
+function filasPlan(r, m, rv){
+  const e = (r && r.etapa) || (m && m.etapa) || (rv && rv.etapa) || '';
+  let t = '';
+  if(e) t += `<tr><th>Etapa</th><td>${esc(e)}${m ? ' · día '+m.dia : ''}</td></tr>`;
+  if(m) t += `<tr><th>% planeado</th><td>${m.plan===0 ? 'Descanso <span class="muted">(sin operación)</span>' : fmtPlan(m.plan)+' <span class="muted">(ratio '+m.ratio+')</span>'}</td></tr>`;
+  return t;
+}
+// Acumulado por etapa hasta una fecha: suma de los % del día de cada etapa (como la columna "% Acumulado" del Excel)
+// y, entre paréntesis, lo que falta para el objetivo de la etapa (columna "% a Ganar" de la hoja Etapas)
+function acumEtapas(fecha){
+  const hoy = claveFecha(new Date());
+  const ult = ROWS.length ? ROWS[ROWS.length-1].fecha : '';
+  if(!ROWS.length || fecha > (hoy > ult ? hoy : ult)) return '';
+  const orden = [], acc = {};
+  ROWS.forEach(r=>{
+    if(r.fecha > fecha) return;
+    const e = r.etapa || etapaDe(r.fecha) || 'Sin etapa';
+    if(!(e in acc)){ acc[e] = 0; orden.push(e); }
+    acc[e] += r.pctDia;
+  });
+  return orden.map(e=>{
+    const inf = ETAPAS.find(x=>x.nombre===e);
+    const meta = inf && inf.meta>0 ? inf.meta*100 : 0;
+    const a = acc[e], falta = meta - a;
+    const txt = !meta ? ''
+      : falta > 0 ? ` <span style="color:#f1c40f;font-weight:700">(faltan ${falta.toFixed(2)} % de ${+meta.toFixed(2)} %)</span>`
+      : ` <span class="pos">(objetivo de ${+meta.toFixed(2)} % cumplido, ${(-falta).toFixed(2)} % de más)</span>`;
+    return `<tr><th>Acumulado ${esc(e)}</th><td class="${signo(a)}">${a>=0?'+':''}${a.toFixed(2)} %${txt}</td></tr>`;
+  }).join('');
+}
+
+function renderLegEtapas(){
+  const set = new Set([...Object.values(METAS).map(m=>m.etapa), ...ROWS.map(r=>r.etapa).filter(Boolean)]);
+  document.getElementById('legEtapas').innerHTML = [...set].map(e=>
+    `<span style="margin-right:8px"><i class="dot" style="background:${ETAPA_COL[e]||'#94a3b8'}"></i>${esc(e)}</span>`).join('');
 }
 
 /* ---------- Filtro global ----------
-   op:  todas | estrategia | ajustes        dir: todas | SELL | BUY
+   op:  todas | estrategia | ajustes
    KPIs, calendario, gráfica y estadísticas se calculan solo con VIS:
    los días que cumplen el filtro, con el balance recalculado sobre esos días. */
 const MESES=['enero','febrero','marzo','abril','mayo','junio','julio','agosto','septiembre','octubre','noviembre','diciembre'];
 let vista = (()=>{ const u=parseFecha(ROWS[ROWS.length-1].fecha); return {y:u.getFullYear(), m:u.getMonth()}; })();
-let filtro = {op:'todas', dir:'todas'};
+let filtro = {op:'todas'};
 let VIS = [];
 let VMAP = {};
 
 function cumpleOp(r, op){ return op==='estrategia' ? r.operoEstrategia : op==='ajustes' ? r.nAjustes>0 : true; }
-function cumpleDir(r, dir){ return dir==='todas' || r.direccion===dir; }
-function hayFiltro(){ return filtro.op!=='todas' || filtro.dir!=='todas'; }
+function hayFiltro(){ return filtro.op!=='todas'; }
 
 let ALL = [];   // días que cumplen el filtro en todos los meses, con el balance encadenado
 function enMes(r){
@@ -256,7 +549,7 @@ function enMes(r){
 
 function aplicarFiltro(){
   let bal = CUENTA_INICIAL;
-  ALL = ROWS.filter(r=>cumpleOp(r,filtro.op) && cumpleDir(r,filtro.dir)).map(r=>{
+  ALL = ROWS.filter(r=>cumpleOp(r,filtro.op)).map(r=>{
     const estV  = filtro.op==='ajustes'    ? 0 : r.est;
     const discV = filtro.op==='estrategia' ? 0 : r.disc;
     const iniV = bal;
@@ -270,21 +563,14 @@ function aplicarFiltro(){
 function renderFiltros(){
   const delMes = ROWS.filter(enMes);
   const ops = [['todas','Todas'],['estrategia','Estrategia'],['ajustes','Ajustes']]
-    .map(([k,t])=>[k,t,delMes.filter(r=>cumpleOp(r,k)&&cumpleDir(r,filtro.dir)).length]);
-  const dirs = [['todas','Ambas'],['SELL','▼ SELL'],['BUY','▲ BUY']]
-    .map(([k,t])=>[k,t,delMes.filter(r=>cumpleOp(r,filtro.op)&&cumpleDir(r,k)).length]);
-  const grupo = (titulo, clave, arr)=>
-    `<div class="fgrupo"><span class="muted">${titulo}</span>${arr.map(([k,t,n])=>
-      `<button class="fb ${filtro[clave]===k?'on':''}" aria-pressed="${filtro[clave]===k}" data-clave="${clave}" data-v="${k}">${t} (${n})</button>`).join('')}</div>`;
+    .map(([k,t])=>[k,t,delMes.filter(r=>cumpleOp(r,k)).length]);
   const el = document.getElementById('filtros');
-  el.innerHTML = grupo('Operativa','op',ops) + grupo('Dirección','dir',dirs)
-    + (hayFiltro() ? `<button class="fb reset" id="fReset">Quitar filtros</button>` : '')
-    + `<span class="muted fcuenta">Mostrando ${VIS.length} de ${delMes.length} días de ${MESES[vista.m]}</span>`;
-  el.querySelectorAll('[data-clave]').forEach(b=>{
-    b.onclick = ()=>{ filtro[b.dataset.clave] = b.dataset.v; renderTodo(); };
+  el.innerHTML = ops.map(([k,t,n])=>
+    `<button class="fb ${filtro.op===k?'on':''}" aria-pressed="${filtro.op===k}" data-v="${k}">${t} (${n})</button>`).join('');
+  el.querySelectorAll('[data-v]').forEach(b=>{
+    b.onclick = ()=>{ filtro.op = b.dataset.v; renderTodo(); };
   });
-  const rs = document.getElementById('fReset');
-  if(rs) rs.onclick = ()=>{ filtro = {op:'todas', dir:'todas'}; renderTodo(); };
+  document.getElementById('fcuenta').textContent = hayFiltro() ? `Mostrando ${VIS.length} de ${delMes.length} días` : '';
 }
 
 /* ---------- KPIs ---------- */
@@ -339,20 +625,11 @@ function renderStats(){
   const excedidos = VIS.filter(r=>r.nAjustes>MAX_AJUSTES).length;
   const excTxt = filtro.op==='estrategia' ? '—' : `<span class="${excedidos?'neg':''}">${excedidos}</span>`;
 
-  const dirs = filtro.dir==='todas' ? ['SELL','BUY'] : [filtro.dir];
-  const porDir = dirs.map(dir=>{
-    const rs = VIS.filter(r=>r.direccion===dir);
-    const tpD = rs.filter(r=>r.resultado==='TP').length;
-    const txt = rs.length ? `${((tpD/rs.length)*100).toFixed(0)} % (${tpD} de ${rs.length})` : 'sin datos';
-    return `<div><small>Acierto ${dir}</small>${txt}</div>`;
-  }).join('');
-
   document.getElementById('stats').innerHTML = `
     <div><small>Acierto de la señal</small>${senales?((tp/senales)*100).toFixed(0):0} % (${tp} TP de ${senales})</div>
     <div><small>Días operados</small>${diasOp} de ${senales}</div>
     <div><small>${etiquetaGP}</small>${valorGP}</div>
     <div><small>Días con más de ${MAX_AJUSTES} ajustes</small>${excTxt}</div>
-    ${porDir}
   `;
 }
 
@@ -371,11 +648,40 @@ function serieRelevante(k){
   return k==='e' ? filtro.op!=='ajustes' : k==='d' ? filtro.op!=='estrategia' : filtro.op==='todas';
 }
 
+// Balance inicial de la etapa del día, objetivo (inicio × (1 + meta %)) y lo que falta en USD
+function etapaInfo(r){
+  const e = r.etapa || etapaDe(r.fecha);
+  const primera = ROWS.find(x=>(x.etapa || etapaDe(x.fecha))===e) || MAP[r.fecha] || r;
+  const ini = primera.ini;
+  const meta = (ETAPAS.find(x=>x.nombre===e)||{}).meta || 0;
+  return {nombre:e, ini, meta, objetivo: ini*(1+meta)};
+}
+// Balance final del día con la cuenta completa (sin filtros)
+function balFinDia(r){
+  const f = MAP[r.fecha];
+  return f ? f.fin : r.finV;
+}
+function faltaTxt(r){
+  const info = etapaInfo(r);
+  if(!info.meta) return 'sin objetivo en la etapa';
+  const falta = info.objetivo - balFinDia(r);
+  return falta > 0 ? `faltan ${f2(falta)} USD para ${info.nombre}` : `meta de ${info.nombre} cumplida`;
+}
+// Texto junto al Balance final en el detalle del día
+function faltaUSD(r){
+  const info = etapaInfo(r);
+  if(!info.meta) return '';
+  const falta = info.objetivo - balFinDia(r);
+  return falta > 0
+    ? ` <span style="color:#f1c40f;font-weight:700">(faltan ${f2(falta)} USD)</span>`
+    : ` <span style="color:#f1c40f;font-weight:700">(meta de ${esc(info.nombre)} cumplida)</span>`;
+}
+
 function acumulados(){
   let ce = 0, cd = 0;
-  const b0 = balanceInicioMes() || 1;   // % sobre el balance de inicio de mes (igual que el KPI)
   const pts = [{f:'Inicio', e:0, d:0, t:0, p:0}];
-  VIS.forEach(r=>{ ce += r.estV; cd += r.discV; pts.push({f:r.fecha, e:ce, d:cd, t:ce+cd, p:(ce+cd)/b0*100, r}); });
+  VIS.forEach(r=>{ ce += r.estV; cd += r.discV; const ini = etapaInfo(r).ini || 1;
+    pts.push({f:r.fecha, e:ce, d:cd, t:ce+cd, p:(balFinDia(r) - ini)/ini*100, r}); });
   return pts;
 }
 
@@ -386,7 +692,10 @@ function renderGrafica(){
     document.getElementById('tip').style.display = 'none';
     return;
   }
-  const W=600, H=260, pL=48, pR=50, pT=14, pB=30;
+  const wrapEl = document.getElementById('wrap');
+  const W = Math.max(320, wrapEl.clientWidth || 600), H = Math.max(150, wrapEl.clientHeight || 260);
+  const pL=48, pR=50, pT=14, pB=30;
+  document.getElementById('grafica').setAttribute('viewBox', `0 0 ${W} ${H}`);
   const pts = acumulados();
   const b0 = balanceInicioMes() || 1;
   const activos = SERIES.filter(s=>serieVis[s.k] && serieRelevante(s.k));
@@ -460,7 +769,7 @@ function renderGrafica(){
     const lineas = SERIES.filter(s=>serieRelevante(s.k))
       .map(s=>`<span style="color:${s.color}">${s.nombre}: ${s.k==='p' ? p.p.toFixed(2)+' %' : p[s.k].toFixed(2)}</span>`).join('<br>');
     const dia = p.r
-      ? `<br><span style="color:#8a96b0">${p.r.direccion||'—'} · ${p.r.resultado} · día ${p.r.plV>=0?'+':''}${f2(p.r.plV)}<br>Clic para abrir el día</span>`
+      ? `<br><span style="color:#8a96b0">${p.r.resultado} · día ${p.r.plV>=0?'+':''}${f2(p.r.plV)}<br>Balance final: ${f2(balFinDia(p.r))} <span style="color:#f1c40f;font-weight:700">(${faltaTxt(p.r)})</span><br>Clic para abrir el día</span>`
       : '';
     tip.innerHTML = `<b>${p.f==='Inicio' ? 'Inicio' : p.f}</b><br>${lineas}${dia}`;
     tip.style.display = 'block';
@@ -482,6 +791,7 @@ function renderGrafica(){
 function renderCalendario(){
   document.getElementById('mes').textContent = `${MESES[vista.m]} ${vista.y}`;
   renderKpis();
+  renderLegEtapas();
   const verEst  = filtro.op!=='ajustes';
   const verDisc = filtro.op!=='estrategia';
   const primero = new Date(vista.y, vista.m, 1);
@@ -494,19 +804,21 @@ function renderCalendario(){
     const clave = claveFecha(new Date(vista.y, vista.m, d));
     const r = MAP[clave];
     if(!r){
-      html += `<div class="day"><div class="n">${d}</div></div>`;
+      const mt = METAS[clave], rv = REVS[clave];
+      const fd = parseFecha(clave), finde = fd.getDay()===0 || fd.getDay()===6;
+      const clic = mt || rv || clave <= claveFecha(new Date());
+      const marca = rv ? `<div class="pl rev">📝 revisión</div>`
+                  : ((finde || (mt && mt.plan===0)) && etapaDe(clave)) ? `<div class="pl muted desc">descanso</div>` : '';
+      html += `<div class="day${clic?' has':''}${rv?' revd':''}"${clic?` data-f="${clave}"`:''}><div class="n">${d}</div>${esquina(clave,'')}${marca}${pillEtapa(clave)}</div>`;
       continue;
     }
     const v = VMAP[clave];
-    const dirHTML = r.direccion
-      ? `<span class="dir ${r.direccion==='SELL'?'sell':'buy'}">${r.direccion==='SELL'?'▼ SELL':'▲ BUY'}</span>`
-      : `<span class="dir none">sin dato</span>`;
     const tpsl = r.resultado==='TP' ? 'tp' : 'sl';
     const resHTML = `<div class="res ${r.resultado==='TP'?'pos':'neg'}">${r.resultado}</div>`;
 
     // Día fuera del filtro: se atenúa, pero se puede abrir
     if(!v){
-      html += `<div class="day has dim ${tpsl}" data-f="${clave}"><div class="n">${d}</div>${dirHTML}${resHTML}</div>`;
+      html += `<div class="day has dim ${tpsl}" data-f="${clave}"><div class="n">${d}</div>${esquina(clave,'')}<div class="lin">${resHTML}</div>${pillEtapa(clave)}</div>`;
       continue;
     }
     const clase = `day has ${tpsl} ${r.operoEstrategia?'':'filtrado'}`;
@@ -518,9 +830,8 @@ function renderCalendario(){
     const plA = (verDisc && r.nAjustes)
       ? `<div class="pl ${signo(r.disc)}">A ${r.disc>=0?'+':''}${f2(r.disc)}</div>`
       : '';
-    html += `<div class="${clase}" data-f="${clave}">${flag}<div class="n">${d}</div>
-             <div class="ini muted">Ini ${f2(v.iniV)}</div>
-             ${dirHTML}${resHTML}${plE}${plA}</div>`;
+    html += `<div class="${clase}" data-f="${clave}"><div class="n">${d}</div>${esquina(clave,flag)}
+             <div class="lin">${resHTML}${plE}${plA}</div>${pillEtapa(clave)}</div>`;
   }
   const cal = document.getElementById('cal');
   cal.innerHTML = html;
@@ -562,7 +873,24 @@ function cargarFotos(fecha){
 }
 
 function abrir(fecha){
-  const r = MAP[fecha]; if(!r) return;
+  const r = MAP[fecha];
+  const m = METAS[fecha];
+  const tituloDia = parseFecha(fecha).toLocaleDateString('es-CO',{weekday:'long',day:'numeric',month:'long',year:'numeric'});
+  const rv = REVS[fecha];
+  if(!r){
+    const pasado = fecha <= claveFecha(new Date());
+    if(!m && !rv && !pasado) return;
+    const tabla = filasPlan(null, m, rv) + acumEtapas(fecha);
+    const textoRev = rv && rv.obs ? `<div class="obs"><b>Revisión:</b> ${esc(rv.obs)}</div>` : '';
+    const conceptoRev = rv && rv.concepto ? `<div class="concepto"><b>Concepto:</b> ${esc(rv.concepto)}</div>` : '';
+    const aviso = rv ? '' : `<p class="muted" style="margin-top:12px">${pasado ? 'Sin operación registrada este día.' : 'Este día aún no tiene registro en el diario.'}</p>`;
+    const caps = (pasado || rv) ? `<h2 style="margin-top:16px">Capturas</h2>${fotosHTML(fecha)}` : '';
+    document.getElementById('m-titulo').textContent = tituloDia;
+    document.getElementById('m-cuerpo').innerHTML = noticiaHTML(m) + (tabla ? `<table>${tabla}</table>` : '') + textoRev + conceptoRev + aviso + caps;
+    document.getElementById('modal').classList.add('open');
+    if(pasado || rv) cargarFotos(fecha);
+    return;
+  }
   const alertas = [];
   if(r.nAjustes>MAX_AJUSTES) alertas.push(`Se registraron ${r.nAjustes} ajustes; el plan permite máximo ${MAX_AJUSTES}.`);
   if(r.pctDisc < -MAX_PERDIDA_DISC) alertas.push(`La pérdida discrecional (${r.pctDisc.toFixed(2)} %) supera el ${MAX_PERDIDA_DISC} %.`);
@@ -572,16 +900,18 @@ function abrir(fecha){
 
   document.getElementById('m-titulo').textContent = parseFecha(fecha).toLocaleDateString('es-CO',{weekday:'long',day:'numeric',month:'long',year:'numeric'});
   document.getElementById('m-cuerpo').innerHTML = `
+    ${noticiaHTML(m)}
     <table>
-      <tr><th>Dirección</th><td>${r.direccion || '—'}</td></tr>
+      ${filasPlan(r,m,rv)}
       <tr><th>Desenlace de la señal</th><td class="${r.resultado==='TP'?'pos':'neg'}">${r.resultado}</td></tr>
       <tr><th>Operó la estrategia</th><td>${r.operoEstrategia?'Sí':'No (filtro)'}</td></tr>
       <tr><th>Resultado estrategia</th><td class="${signo(r.est)}">${r.operoEstrategia?f2(r.est):'—'}</td></tr>
       <tr><th>Ajustes discrecionales</th><td>${ajustesTxt}</td></tr>
       <tr><th>Total discrecional</th><td class="${signo(r.disc)}">${f2(r.disc)}</td></tr>
       <tr><th>Balance inicial</th><td>${f2(r.ini)}</td></tr>
-      <tr><th>Balance final</th><td>${f2(r.fin)}</td></tr>
+      <tr><th>Balance final</th><td>${f2(r.fin)}${faltaUSD(r)}</td></tr>
       <tr><th>% del día</th><td class="${signo(r.pctDia)}">${r.pctDia.toFixed(2)} %</td></tr>
+      ${acumEtapas(fecha)}
     </table>
     ${alertas.map(a=>`<div class="warn">⚠ ${esc(a)}</div>`).join('')}
     <div class="obs"><b>Observación:</b> ${esc(r.obs)}</div>
@@ -593,8 +923,9 @@ function abrir(fecha){
   cargarFotos(fecha);
 }
 
-function cargarFilas(filas, balanceExcel){
+function cargarFilas(filas, balanceExcel, revs){
   DATA = filas;
+  REVS = revs || {};
   renderTodo();
   const ultimo = ROWS[ROWS.length-1].fin;
   const coincide = balanceExcel!==null && Math.abs(ultimo-balanceExcel) < 0.005;
@@ -605,6 +936,8 @@ function cargarFilas(filas, balanceExcel){
 function procesarLibro(buf){
   const msg = document.getElementById('msg');
   const wb = XLSX.read(buf, {type:'array'});
+  leerMetas(wb);
+  renderPlan();
   const ws = wb.Sheets['Diario Completo Leo'];
   if(!ws){ msg.textContent = 'No encontré la hoja "Diario Completo Leo" en ese archivo.'; return; }
   const rows = XLSX.utils.sheet_to_json(ws, {header:1, raw:true, defval:null});
@@ -623,6 +956,7 @@ function procesarLibro(buf){
     const fecha = `${dt.getUTCFullYear()}-${String(dt.getUTCMonth()+1).padStart(2,'0')}-${String(dt.getUTCDate()).padStart(2,'0')}`;
     filas.push({
       fecha,
+      etapa: String(c[1]||'').trim(),
       resultado: String(c[3]||'').trim().toUpperCase(),
       direccion: String(c[4]||'').trim().toUpperCase() || null,
       estrategia: numv(c[5]),
@@ -630,34 +964,36 @@ function procesarLibro(buf){
       obs: String(c[14]||'').trim(),
       concepto: String(c[15]||'').trim()
     });
-    balanceExcel = numv(c[10]);
+    { const b = numv(c[10]); if(b!==null) balanceExcel = b; }
   });
-  if(!filas.length){ msg.textContent = 'No encontré días en la hoja.'; return; }
-  cargarFilas(filas, balanceExcel);
+  // Fila sin resultado, operación, estrategia ni ajustes = revisión (p. ej. fin de semana): solo observación y capturas
+  const esRev = f=> (!f.resultado || /^REV/.test(f.resultado)) && f.estrategia===null && !f.ajustes.length && !f.direccion;
+  const revs = {};
+  filas.filter(esRev).forEach(f=>{ revs[f.fecha] = {obs:f.obs, concepto:f.concepto, etapa:f.etapa}; });
+  const dias = filas.filter(f=>!esRev(f));
+  if(!dias.length){ msg.textContent = 'No encontré días en la hoja.'; return; }
+  cargarFilas(dias, balanceExcel, revs);
+  return true;
+}
+
+// Indicador junto al título: de dónde salen los datos
+function setFuente(ok){
+  const el = document.getElementById('fuente');
+  el.className = ok ? 'fok' : 'fno';
+  el.textContent = ok ? '● Excel leído' : '● Datos guardados';
+  el.title = ok ? 'Datos leídos de Magic_Number.xlsx' : 'No se pudo leer Magic_Number.xlsx (el navegador no lo permite al abrir con doble clic); se muestran los datos guardados dentro del panel';
 }
 
 // Carga automática: si Magic_Number.xlsx está en la misma carpeta del panel, se lee al abrirlo
 async function cargarDesdeRepo(){
-  const aviso = ()=>{
-    document.getElementById('msg').textContent = 'Mostrando los datos guardados en el panel. Para ver el Excel más reciente pulsa "Cargar Excel" y elige Magic_Number.xlsx (abrir el panel con doble clic no permite leer el archivo automáticamente).';
-  };
   try{
     const r = await fetch('Magic_Number.xlsx', {cache:'no-store'});
-    if(!r.ok){ aviso(); return; }
-    procesarLibro(await r.arrayBuffer());
+    if(!r.ok){ setFuente(false); return; }
+    setFuente(procesarLibro(await r.arrayBuffer()) === true);
   }catch(err){
-    aviso();
+    setFuente(false);
   }
 }
-
-// Carga manual del Excel desde el computador
-document.getElementById('cargarXlsx').onclick = ()=>document.getElementById('archivoXlsx').click();
-document.getElementById('archivoXlsx').onchange = async e=>{
-  const f = e.target.files[0]; if(!f) return;
-  procesarLibro(await f.arrayBuffer());
-  document.getElementById('msg').textContent = `Datos cargados desde ${f.name}.`;
-  e.target.value = '';
-};
 
 // Limpia capturas que se hubieran guardado en este navegador con una versión anterior del panel
 try{ indexedDB.deleteDatabase('diario-nas100'); }catch(e){}
@@ -690,6 +1026,8 @@ document.getElementById('prev').onclick = ()=>{ vista.m--; if(vista.m<0){vista.m
 document.getElementById('next').onclick = ()=>{ vista.m++; if(vista.m>11){vista.m=0;vista.y++;} renderTodo(); };
 
 
+let _rz;
+if(typeof window!=='undefined') window.addEventListener('resize', ()=>{ clearTimeout(_rz); _rz = setTimeout(renderGrafica, 120); });
 renderTodo();
 cargarDesdeRepo();
 </script>
