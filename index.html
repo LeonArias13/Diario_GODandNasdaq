@@ -154,6 +154,63 @@ h1{font-size:18px}
 .pl.desc{font-size:10px;margin-top:8px}
 .pl.rev{color:#fbbf24;font-size:11px}
 .day.revd{border-color:rgba(251,191,36,.5)}
+/* ---- Resumen del mes ---- */
+.rbtn{background:linear-gradient(135deg,#ffd84a,#e0a800);color:#0f1420;font-weight:700;padding:4px 14px;font-size:12px;border-radius:8px;letter-spacing:.02em}
+.rbtn:hover{background:linear-gradient(135deg,#ffe58a,#f1c40f)}
+#fcuenta + .rbtn{margin-left:8px}
+#fcuenta:empty + .rbtn{margin-left:auto}
+#rs{position:fixed;inset:0;background:rgba(5,8,16,.8);display:none;align-items:center;justify-content:center;padding:14px;z-index:12}
+#rs.open{display:flex}
+.rsheet{position:relative;background:var(--card);border:1px solid var(--line);border-radius:16px;max-width:1020px;width:100%;max-height:95vh;overflow:auto}
+.rx{position:absolute;top:10px;right:10px;z-index:2;background:rgba(15,20,32,.7)}
+.boom{text-align:center;padding:40px 30px 26px;background:radial-gradient(ellipse at 50% 0,rgba(241,196,15,.2),transparent 70%);border-bottom:1px solid var(--line)}
+.boom q{display:block;quotes:none;font:italic 700 clamp(24px,4.4vw,40px)/1.2 Georgia,"Times New Roman",serif;color:#ffe08a;text-shadow:0 0 30px rgba(241,196,15,.5);animation:boom .9s cubic-bezier(.2,.9,.2,1) both}
+.boom small{display:block;margin-top:14px;color:var(--muted);font-size:12px;letter-spacing:.04em;animation:boom .9s .25s both}
+.boom .rl{background:transparent;color:var(--muted);font-size:11px;padding:2px 8px;margin-left:8px;border:1px solid var(--line)}
+@keyframes boom{0%{opacity:0;transform:scale(1.25);filter:blur(8px)}55%{opacity:1;transform:scale(.97);filter:none}100%{opacity:1;transform:scale(1);filter:none}}
+@media (prefers-reduced-motion:reduce){.boom q,.boom small{animation:none}}
+.rbody{padding:16px 22px 24px}
+.rbody h3{font-size:13px;margin:20px 0 10px;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;font-weight:600}
+.rbody h3:first-child{margin-top:0}
+.rk{display:grid;grid-template-columns:repeat(auto-fit,minmax(145px,1fr));gap:10px}
+.rk>div,.wl>div{background:#141b2b;border:1px solid var(--line);border-radius:10px;padding:10px 12px}
+.rk small,.wl small{display:block;color:var(--muted);font-size:11px;margin-bottom:2px}
+.rk b{font-size:21px}
+.rk em{display:block;font-style:normal;color:var(--muted);font-size:11px;margin-top:2px}
+.wl{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:10px}
+.wl .t{display:flex;justify-content:space-between;font-size:13px;margin-bottom:6px}
+.bar{display:flex;height:10px;border-radius:6px;overflow:hidden;background:#0f1420;margin:4px 0 6px}
+.bar i{display:block;height:100%}
+.leg2{font-size:12px;color:var(--muted);display:flex;gap:10px;flex-wrap:wrap}
+.esc{display:flex;gap:6px;align-items:center;flex-wrap:wrap;margin-bottom:10px;font-size:12px;color:var(--muted)}
+.segs{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:10px}
+.seg{background:#141b2b;border:1px solid var(--line);border-radius:12px;padding:12px 14px;border-top:3px solid var(--c)}
+.seg h4{margin:0 0 2px;font-size:15px;color:var(--c)}
+.seg .d{color:var(--muted);font-size:12px;margin-bottom:8px}
+.seg table th{width:55%;font-size:12px}
+.seg td,.seg th{padding:4px 2px}
+.seg .meta{font-size:12px;margin-top:8px;color:var(--text)}
+.mbar{height:8px;border-radius:5px;background:#0f1420;display:flex;overflow:hidden;margin:5px 0}
+.mbar i{display:block;height:100%}
+.ag{display:grid;grid-template-columns:repeat(auto-fit,minmax(125px,1fr));gap:8px}
+.ag div{background:#141b2b;border:1px solid var(--line);border-radius:10px;padding:8px 10px;font-size:12px}
+.ag div.nw{border-color:#3b82f6;background:rgba(59,130,246,.12)}
+.ag b{display:block;font-size:15px;color:#7fb0ff}
+.ag .z b{color:var(--muted);font-size:13px}
+.reglas{margin:0;padding-left:18px;font-size:13px;line-height:1.7}
+.reglas li::marker{color:var(--gold)}
+.cierre{text-align:center;color:var(--gold);font:italic 14px Georgia,serif;margin-top:22px;opacity:.85}
+.tb th{width:auto;font-size:12px}
+.tb td,.tb th{padding:5px 8px}
+.tb tr.on td,.tb tr.on th{background:rgba(59,130,246,.18)}
+.tb tr.z0.on td,.tb tr.z0.on th{background:rgba(46,204,113,.18)}
+.tb tr.z1.on td,.tb tr.z1.on th{background:rgba(241,196,15,.2)}
+.tb tr.z2.on td,.tb tr.z2.on th{background:rgba(231,76,60,.2)}
+.tb tr.z3.on td,.tb tr.z3.on th{background:rgba(231,76,60,.4)}
+.box{background:#141b2b;border:1px solid var(--line);border-radius:12px;padding:12px 14px;font-size:13px;line-height:1.55}
+.box+.box{margin-top:10px}
+.boom .hoy{display:inline-block;margin-top:14px;background:rgba(241,196,15,.12);border:1px solid rgba(241,196,15,.4);border-radius:10px;padding:6px 14px;font:italic 15px Georgia,serif;color:#ffe08a;animation:boom .9s .25s both}
+.boom .les{display:block;margin-top:10px;color:var(--muted);font-size:12px;animation:boom .9s .35s both}
 </style>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 </head>
@@ -177,7 +234,7 @@ h1{font-size:18px}
 
 <section class="grid">
   <div class="card">
-    <div class="chead"><h2>Calendario</h2><div class="fgrupo" id="filtros"></div><span class="muted" id="fcuenta"></span></div>
+    <div class="chead"><h2>Calendario</h2><div class="fgrupo" id="filtros"></div><span class="muted" id="fcuenta"></span><button class="rbtn" id="btnRes" title="Resumen, KPIs y proyección del mes">📊 Resumen</button></div>
     <div class="cal" id="cal"></div>
     <div class="legend">
       <span><i class="dot" style="background:rgba(46,204,113,.5)"></i>TP de estrategia</span>
@@ -209,6 +266,8 @@ h1{font-size:18px}
     <div id="m-cuerpo"></div>
   </div>
 </div>
+
+<div id="rs" role="dialog" aria-modal="true" aria-label="Resumen del mes"><div class="rsheet"><button id="rs-x" class="rx" aria-label="Cerrar">✕</button><div class="boom" id="rs-f"></div><div class="rbody" id="rs-b"></div></div></div>
 
 <script>
 /* ==========================================================
@@ -1030,6 +1089,264 @@ let _rz;
 if(typeof window!=='undefined') window.addEventListener('resize', ()=>{ clearTimeout(_rz); _rz = setTimeout(renderGrafica, 120); });
 renderTodo();
 cargarDesdeRepo();
+
+/* ---------- Resumen del mes ---------- */
+const FRASE_MES = "Sé exactamente cuánto puedo perder. Acepto esa pérdida antes de entrar.";   // frase fija: cámbiala cuando quieras
+const FRASES_ESTADO = {
+  rojo:"Mi valor y mi capacidad están intactos en cada resultado.",
+  verde:"Ganar por impulso no es disciplina.",
+  sin:"No operar es una operación.",
+  normal:"Confío en mi sistema y lo ejecuto con precisión y disciplina."
+};
+const PERDIDA_ETAPA = 7;           // % máximo de pérdida de la etapa (sobre el balance con el que empezó)
+const ZONAS = [2,4,6];             // semáforo: normal < 2 %, amarillo < 4 %, rojo < 6 %, stop desde 6 %
+const ESCEN = [[1,'Plan 100 %'],[0.25,'25 % del plan'],['real','Mi ritmo real']];
+let escProy = 1;
+
+const usd = v=>(v>=0?'+':'')+f2(v);
+const fcorta = k=>parseFecha(k).toLocaleDateString('es-CO',{day:'numeric',month:'short'});
+const pc = (a,b)=>b ? Math.round(a/b*100)+' %' : '—';
+function barra(p){
+  const t = p.reduce((a,x)=>a+x[0],0);
+  return `<div class="bar">${t ? p.map(([n,c])=>n ? `<i style="width:${n/t*100}%;background:${c}"></i>` : '').join('') : ''}</div>`;
+}
+
+// Ritmo real: promedio de % por día OPERADO del mes (con pocos datos es solo una estimación)
+function ritmoInfo(){
+  const d = ROWS.filter(r=>enMes(r) && r.operaron);
+  return {n:d.length, v: d.length ? d.reduce((a,r)=>a+r.pctDia,0)/d.length/100 : 0};
+}
+function ritmo(m, e){
+  if(e===undefined) e = escProy;
+  return m.plan>0 ? (e==='real' ? ritmoInfo().v : m.plan*e) : 0;
+}
+// Recorre el mes día por día: lo real queda y los días pendientes se proyectan
+function calcResumen(e){
+  const dm = ROWS.filter(enMes);
+  const corte = new Date(vista.y, vista.m, 1);
+  const antes = ROWS.filter(r=>parseFecha(r.fecha)<corte);
+  const balIni = antes.length ? antes[antes.length-1].fin : CUENTA_INICIAL;
+  const ult = ROWS.length ? ROWS[ROWS.length-1].fecha : '';
+  const nd = new Date(vista.y, vista.m+1, 0).getDate();
+  let bal = balIni; const segs = [];
+  for(let d=1; d<=nd; d++){
+    const k = claveFecha(new Date(vista.y, vista.m, d)), m = METAS[k], r = MAP[k];
+    const et = etapaDe(k) || (m && m.etapa) || 'Sin etapa';
+    let s = segs[segs.length-1];
+    if(!s || s.etapa!==et){ s = {etapa:et, ini:bal, desde:k, hasta:k, reg:0, realUsd:0, real:0, pend:0, opDias:0, noticias:0}; segs.push(s); }
+    s.hasta = k;
+    if(m && m.plan>0) s.opDias++;
+    if(m && m.noticia>0) s.noticias++;
+    if(r){ s.reg++; s.real += r.pctDia; s.realUsd += r.plDia; bal = r.fin; }
+    else if(k>ult && m && m.plan>0){ s.pend++; bal *= 1 + ritmo(m,e); }
+    s.fin = bal;
+  }
+  return {dm, balIni, segs, ult};
+}
+function progresoEtapa(nombre, ult){
+  const inf = ETAPAS.find(x=>x.nombre===nombre);
+  const meta = inf && inf.meta>0 ? inf.meta*100 : 0;
+  const real = ROWS.filter(r=>(r.etapa||etapaDe(r.fecha))===nombre).reduce((a,r)=>a+r.pctDia,0);
+  const plan = Object.values(METAS).filter(m=>m.etapa===nombre && m.fecha>ult).reduce((a,m)=>a+ritmo(m)*100,0);
+  return {meta, real, plan};
+}
+// Etapa actual: balance de inicio, objetivo, pérdida y lo que queda del plan.
+// P = suma de % planeados restantes (techo); R = suma del riesgo de esos días (% planeado ÷ ratio)
+function datosEtapa(){
+  if(!ROWS.length) return null;
+  const last = ROWS[ROWS.length-1], ult = last.fecha;
+  const nombre = last.etapa || etapaDe(ult);
+  const inf = ETAPAS.find(x=>x.nombre===nombre) || {op:0, meta:0};
+  const filas = ROWS.filter(x=>(x.etapa||etapaDe(x.fecha))===nombre);
+  const ini = (filas[0] || last).ini, bal = last.fin;
+  const pend = Object.values(METAS).filter(m=>m.etapa===nombre && m.fecha>ult && m.plan>0);
+  const todos = Object.values(METAS).filter(m=>m.etapa===nombre);
+  return {nombre, inf, ini, bal, ult, pend,
+    pctEtapa:(bal-ini)/ini*100,
+    minPct:Math.min(0, ...filas.map(x=>(x.fin-ini)/ini*100)),
+    P:pend.reduce((a,m)=>a+m.plan*100,0),
+    R:pend.reduce((a,m)=>a+(m.ratio ? m.plan*100/m.ratio : 0),0),
+    fin: todos.length ? todos[todos.length-1].fecha : '',
+    meta:inf.meta*100, objetivo:ini*(1+inf.meta)};
+}
+function zonaDe(loss){ return loss<ZONAS[0]?0 : loss<ZONAS[1]?1 : loss<ZONAS[2]?2 : 3; }
+
+function pintarFrase(){
+  const E = datosEtapa(), last = ROWS[ROWS.length-1];
+  let est = 'normal';
+  if(E){
+    const loss = Math.max(0, -E.pctEtapa);
+    if(zonaDe(loss)>=1) est = 'rojo';
+    else if((E.meta>0 && E.bal>=E.objetivo) || E.pctEtapa>=1) est = 'verde';
+    else if(last && !last.operoEstrategia) est = 'sin';
+  }
+  const les = [...ROWS].reverse().find(r=>r.concepto);
+  document.getElementById('rs-f').innerHTML =
+    `<q>${esc(FRASE_MES)}</q><span class="hoy">${esc(FRASES_ESTADO[est])}</span>` +
+    (les ? `<span class="les">Tu última lección (${fcorta(les.fecha)}): ${esc(les.concepto)}</span>` : '') +
+    `<small>Yo declaro. Yo soy. Yo tengo. Yo recibo. Yo vibro. Yo manifiesto.</small>`;
+}
+
+function pintarResumen(){
+  const R = calcResumen(escProy), dm = R.dm, hoy = claveFecha(new Date()), ult = R.ult;
+  const sen = dm.length, tp = dm.filter(r=>r.resultado==='TP').length, sl = sen-tp;
+  const est = dm.filter(r=>r.operoEstrategia);
+  const eg = est.filter(r=>r.est>0).length, ep = est.filter(r=>r.est<0).length, eb = est.length-eg-ep;
+  const aj = dm.flatMap(r=>r.ajustes.map(num));
+  const ag = aj.filter(a=>a>0).length, ap = aj.filter(a=>a<0).length, ab = aj.length-ag-ap;
+  const todas = [...est.map(r=>r.est), ...aj];
+  const sumG = todas.filter(x=>x>0).reduce((a,b)=>a+b,0), sumP = -todas.filter(x=>x<0).reduce((a,b)=>a+b,0);
+  const fpf = sumP ? (sumG/sumP).toFixed(2) : (sumG ? '∞' : '—');
+  const gT = eg+ag, pT = ep+ap, nT = todas.length;
+  const resUsd = dm.reduce((a,r)=>a+r.plDia,0);
+  const balAct = dm.length ? dm[dm.length-1].fin : R.balIni;
+  const pctMes = R.balIni ? (balAct-R.balIni)/R.balIni*100 : 0;
+  const mejor = dm.length ? dm.reduce((a,b)=>b.plDia>a.plDia?b:a) : null;
+  const peor  = dm.length ? dm.reduce((a,b)=>b.plDia<a.plDia?b:a) : null;
+  const exc = dm.filter(r=>r.nAjustes>MAX_AJUSTES).length;
+  let racha = 0; for(let i=dm.length-1; i>=0 && dm[i].plDia>=0; i--) racha++;
+  // % planeado de cada día ya vivido: si no está en la hoja Metas se calcula con la regla (riesgo de la etapa × ratio del día de la semana)
+  const planDia = k=>{ if(METAS[k]) return METAS[k].plan; const e = ETAPAS.find(x=>x.nombre===etapaDe(k)); return e ? e.op*(RIESGO[parseFecha(k).getDay()]||0) : 0; };
+  const diasPlan = [];
+  for(let d=1, nd0=new Date(vista.y, vista.m+1, 0).getDate(); d<=nd0; d++){
+    const k = claveFecha(new Date(vista.y, vista.m, d));
+    if(k<=ult && planDia(k)>0) diasPlan.push({fecha:k, plan:planDia(k)});
+  }
+  const techo = diasPlan.reduce((a,m)=>a+m.plan*100,0), capt = dm.reduce((a,r)=>a+r.pctDia,0);
+
+  const kpi = (t,v,sub,c)=>`<div><small>${t}</small><b class="${c||''}">${v}</b><em>${sub||''}</em></div>`;
+  const kpis = [
+    kpi('Resultado del mes', `${pctMes>=0?'+':''}${pctMes.toFixed(2)} %`, `${usd(resUsd)} USD`, signo(pctMes)),
+    kpi('Balance actual', f2(balAct), `inicio de mes ${f2(R.balIni)}`),
+    kpi('Acierto de la señal', pc(tp,sen), `${tp} TP · ${sl} SL de ${sen}`),
+    kpi('Operaciones ganadas', gT, `${pc(gT,nT)} de ${nT} operaciones`, 'pos'),
+    kpi('Operaciones perdidas', pT, `${pc(pT,nT)} de ${nT} operaciones`, pT?'neg':''),
+    kpi('Factor de beneficio', fpf, 'ganado ÷ perdido'),
+    kpi('Promedio por operación', nT ? usd(resUsd/nT) : '—', 'USD · expectativa real', nT ? signo(resUsd) : ''),
+    kpi('Entradas de estrategia', `${est.length} de ${diasPlan.length}`, 'días de plan en que entraste'),
+    kpi('Mejor día', mejor ? usd(mejor.plDia) : '—', mejor ? fcorta(mejor.fecha) : '', 'pos'),
+    kpi('Peor día', peor && peor.plDia<0 ? usd(peor.plDia) : '—', peor && peor.plDia<0 ? fcorta(peor.fecha) : 'sin días en rojo', peor && peor.plDia<0 ? 'neg' : ''),
+    kpi('Días sin pérdida', racha, 'racha actual'),
+    kpi('Disciplina', pc(sen-exc, sen), `${exc} día(s) con más de ${MAX_AJUSTES} ajustes`, exc?'neg':'pos')
+  ].join('');
+
+  const fila = (t,partes,leg)=>`<div><div class="t"><b>${t}</b></div>${barra(partes)}<div class="leg2">${leg}</div></div>`;
+  const gp = fila('Señal (TP / SL)', [[tp,'#2ecc71'],[sl,'#e74c3c']], `<span class="pos">${tp} TP</span><span class="neg">${sl} SL</span><span>${pc(tp,sen)} acierto</span>`)
+    + fila('Estrategia', [[eg,'#2ecc71'],[ep,'#e74c3c'],[eb,'#8a96b0']], `<span class="pos">${eg} ganadas</span><span class="neg">${ep} perdidas</span><span>${eb} en cero</span><span>${sen-est.length} sin operar (filtro)</span>`)
+    + fila('Ajustes', [[ag,'#2ecc71'],[ap,'#e74c3c'],[ab,'#8a96b0']], `<span class="pos">${ag} ganados</span><span class="neg">${ap} perdidos</span><span>${ab} en cero</span><span>${pc(ag,aj.length)} acierto</span>`);
+
+  const planReal = `<div class="box">El techo del plan hasta hoy era <b>${techo.toFixed(2)} %</b> y capturaste <b class="${signo(capt)}">${capt.toFixed(2)} %</b> (${techo ? Math.round(capt/techo*100) : 0} % del techo). Entraste a la estrategia en <b>${est.length} de ${diasPlan.length}</b> días de plan: con filtro y volatilidad es normal quedar lejos del techo; el plan es hasta dónde puedes llegar, no una obligación de entrar.</div>`;
+
+  // ----- Meta de etapa -----
+  const E = datosEtapa();
+  let metaHTML = '', semaforo = '';
+  if(E && E.meta>0){
+    const falta = E.objetivo - E.bal, faltaPct = falta/E.bal*100, n = E.pend.length;
+    if(falta<=0){
+      metaHTML = `<div class="box"><b class="pos">Meta de ${esc(E.nombre)} cumplida</b> (${usd(E.bal-E.ini)} USD desde ${f2(E.ini)}). Protege lo ganado: no abras por inercia y no subas el riesgo.</div>`;
+    } else {
+      const eqPlan = E.P ? faltaPct/E.P*100 : 0;
+      const filas = [1,0.75,0.5].map(e=>{
+        const den = e*(E.P+E.R), p = den ? (faltaPct + e*E.R)/den*100 : NaN;
+        const ok = p<=100, col = !ok ? 'neg' : p<=50 ? 'pos' : '';
+        return `<tr><th>Entras ${Math.round(e*100)} % de los días (${Math.round(e*n)} de ${n})</th><td class="${col}">${ok ? 'acertar ≥ '+Math.ceil(p)+' %' : 'no alcanza con ese número de entradas'}</td></tr>`;
+      }).join('');
+      metaHTML = `<div class="box">Objetivo de <b>${esc(E.nombre)}</b>: ${f2(E.ini)} → <b>${f2(E.objetivo)}</b> (+${+E.meta.toFixed(2)} %). Hoy tienes ${f2(E.bal)}: te faltan <b style="color:var(--gold)">${f2(falta)} USD</b> (${faltaPct.toFixed(2)} %) en <b>${n} días de plan</b> hasta el ${E.fin ? fcorta(E.fin) : '—'}.
+        <br>Eso es <b>≈ ${f2(n ? falta/n : 0)} USD por día de plan</b> y equivale al <b>${eqPlan.toFixed(0)} % del plan restante</b> (techo de ${E.P.toFixed(1)} %). Por eso el escenario del 25 % se parece a la meta.</div>
+        <div class="box">Acierto necesario para llegar a la meta, según cuántos días logres entrar (mismo riesgo del plan, sin extender ni subir el tamaño):
+        <table class="tb">${filas}</table>
+        <span class="muted">Si no alcanzas, el plan es quedarte más días en la etapa (el Excel lo permite), no subir el riesgo. Cálculo aproximado, sin interés compuesto.</span></div>`;
+    }
+  }
+  if(E){
+    const loss = Math.max(0, -E.pctEtapa), z = zonaDe(loss), op = E.inf.op*100;
+    const filasZ = [
+      [`Hasta −${ZONAS[0]} %`, 'Normal: mismo riesgo', `${+op.toFixed(2)} %`],
+      [`−${ZONAS[0]} % a −${ZONAS[1]} %`, 'Amarillo: riesgo a la mitad', `${+(op/2).toFixed(2)} %`],
+      [`−${ZONAS[1]} % a −${ZONAS[2]} %`, 'Rojo: pausa y revisas el diario antes de seguir', '0 %'],
+      [`Más de −${ZONAS[2]} %`, `Stop: queda menos de 1 SL; solo con riesgo mínimo`, `${+(op/4).toFixed(2)} %`]
+    ].map((f,i)=>`<tr class="z${i} ${i===z?'on':''}"><th>${f[0]}</th><td>${f[1]}</td><td>${f[2]}</td></tr>`).join('');
+    semaforo = `<div class="box">Pérdida máxima de la etapa: <b>${PERDIDA_ETAPA} %</b> sobre ${f2(E.ini)} = ${f2(E.ini*PERDIDA_ETAPA/100)} USD; piso en <b>${f2(E.ini*(1-PERDIDA_ETAPA/100))}</b>. Pérdida actual: <b class="${loss?'neg':'pos'}">${loss.toFixed(2)} %</b>; tu punto más bajo fue ${E.minPct.toFixed(2)} % (usaste ${(Math.abs(E.minPct)/PERDIDA_ETAPA*100).toFixed(0)} % del margen).
+      <table class="tb"><tr><th>Pérdida de la etapa</th><th>Qué hacer</th><th>Riesgo por operación</th></tr>${filasZ}</table></div>`;
+  }
+
+  const casos = [
+    ['Entra y va a TP','Cumples el ratio del día, sin extender.'],
+    ['Entra pero hay ruido','Aseguras (50 % o cero) y dejas correr, como el 12 y 13 de octubre.'],
+    ['No entra por volatilidad o filtro','El día vale 0. No compensas; el SL ahorrado es capital protegido.'],
+    ['Día con noticia','El plan baja a la mitad.'],
+    ['SL','Aceptas la pérdida (ya la aceptaste antes de entrar) y revisas el semáforo antes del siguiente día.'],
+    ['Vas atrasado del plan','No subes el riesgo: el atraso se recupera con días, no con tamaño.'],
+    [`Más de ${MAX_AJUSTES} ajustes`,'Te detienes: ganar por impulso no es disciplina (20 de octubre).'],
+    ['Meta cumplida','Proteges lo ganado y no abres por inercia.']
+  ].map(c=>`<tr><th>${c[0]}</th><td>${c[1]}</td></tr>`).join('');
+
+  const segs = R.segs.filter(s=>s.opDias||s.reg).map(s=>{
+    const p = progresoEtapa(s.etapa, ult), col = ETAPA_COL[s.etapa]||'#94a3b8';
+    const pend = s.fin - (s.ini + s.realUsd);
+    let meta = '';
+    if(p.meta){
+      const a = Math.max(0, Math.min(100, p.real/p.meta*100)), b = Math.max(0, Math.min(100-a, p.plan/p.meta*100)), fin = p.real+p.plan;
+      meta = `<div class="meta">Objetivo de la etapa: <b>${+p.meta.toFixed(2)} %</b><div class="mbar"><i style="width:${a}%;background:#3b82f6"></i><i style="width:${b}%;background:rgba(127,176,255,.35)"></i></div>Llevas <b>${p.real.toFixed(2)} %</b>; con este escenario llegarías a <b class="${fin>=p.meta?'pos':''}">${fin.toFixed(2)} %</b></div>`;
+    }
+    return `<div class="seg" style="--c:${col}"><h4>${esc(s.etapa)}</h4><div class="d">${fcorta(s.desde)} – ${fcorta(s.hasta)} · ${s.opDias} días de operación${s.noticias?` · 📰 ${s.noticias}`:''}</div>
+      <table><tr><th>Balance al entrar</th><td>${f2(s.ini)}</td></tr>
+      <tr><th>Resultado real</th><td class="${signo(s.realUsd)}">${usd(s.realUsd)} USD (${s.real>=0?'+':''}${s.real.toFixed(2)} %)</td></tr>
+      <tr><th>Pendiente (${s.pend} días)</th><td class="${signo(pend)}">${s.pend ? usd(pend)+' USD' : '—'}</td></tr>
+      <tr><th>Balance al salir</th><td><b>${f2(s.fin)}</b></td></tr></table>${meta}</div>`;
+  }).join('') || '<p class="muted">Sin plan definido para este mes.</p>';
+
+  const chips = ESCEN.map(([v,t])=>`<button class="fb ${escProy===v?'on':''}" data-esc="${v}">${t}</button>`).join('');
+  const comp = ESCEN.map(([v,t])=>{
+    const s = calcResumen(v).segs, f = s.length ? s[s.length-1].fin : balAct;
+    return `<tr class="${v===escProy?'on':''}"><th>${t}</th><td>${f2(f)}</td><td class="${signo(f-balAct)}">${usd(f-balAct)} USD</td></tr>`;
+  }).join('');
+  const ri = ritmoInfo();
+
+  const dn = ['Dom','Lun','Mar','Mié','Jue','Vie','Sáb'];
+  const prox = Object.values(METAS).filter(m=>m.fecha>=hoy).slice(0,7).map(m=>{
+    const d = parseFecha(m.fecha), des = !(m.plan>0);
+    return `<div class="${m.noticia>0?'nw':''} ${des?'z':''}">${dn[d.getDay()]} ${d.getDate()}<b>${des?'Descanso':fmtPlan(ritmo(m))}</b>${des?'':`≈ ${usd(balAct*ritmo(m))} USD`}${m.noticia>0?'<br>📰 mitad':''}</div>`;
+  }).join('');
+  const noticias = Object.values(METAS).filter(m=>m.noticia>0 && m.fecha>=hoy && enMes(m))
+    .map(m=>`<li><b>${fcorta(m.fecha)}</b>: ${esc(m.nota||'Noticia')}</li>`).join('');
+  const etReg = R.segs.filter(s=>s.opDias).map(s=>{ const e = ETAPAS.find(x=>x.nombre===s.etapa); return e ? `${esc(e.nombre)}: ${+(e.op*100).toFixed(2)} % por operación` : ''; }).filter(Boolean).join(' · ');
+  const ratios = [1,2,3,4,5,6,0].map(d=>`${dn[d]} ${RIESGO[d]||0}`).join(' · ');
+
+  document.getElementById('rs-b').innerHTML = `
+    <h3>KPIs de ${MESES[vista.m]}</h3><div class="rk">${kpis}</div>
+    <h3>Ganadas vs. perdidas</h3><div class="wl">${gp}</div>
+    <h3>Plan vs. real</h3>${planReal}
+    <h3>Meta de la etapa: qué hacer para llegar</h3>${metaHTML || '<p class="muted">La etapa actual no tiene objetivo.</p>'}
+    <h3>Tope de pérdida de la etapa</h3>${semaforo}
+    <h3>Proyección por etapas · ${MESES[vista.m]}</h3>
+    <div class="esc">Escenario: ${chips}</div>
+    <table class="tb" style="margin-bottom:10px"><tr><th>Escenario</th><th>Balance a fin de mes</th><th>Desde hoy</th></tr>${comp}</table>
+    <div class="muted" style="margin:0 0 10px;font-size:12px">Plan 100 % = techo si cada día pendiente cierra en su % planeado. «Mi ritmo real» = ${(ri.v*100).toFixed(2)} % por día operado${ri.n<10?` (solo ${ri.n} días: estimación con pocos datos)`:''}, aplicado a cada día de plan, así que es optimista si no entras todos los días.</div>
+    <div class="segs">${segs}</div>
+    <h3>Próximos 7 días</h3><div class="ag">${prox || '<span class="muted">Sin plan próximo</span>'}</div>
+    <h3>Qué hacer en cada caso</h3><div class="box"><table class="tb">${casos}</table></div>
+    <h3>Reglas del mes</h3>
+    <ul class="reglas">
+      <li>Antes de entrar: sé exactamente cuánto arriesgo y lo acepto.</li>
+      <li>Máximo <b>${MAX_AJUSTES} ajustes</b> al día (con estrategia, 1 ajuste). Pérdida discrecional máxima: <b>${MAX_PERDIDA_DISC} %</b>.</li>
+      <li>${etReg || 'Sin etapas definidas'}. El % planeado del día = ratio × % por operación.</li>
+      <li>Ratio por día: ${ratios}.</li>
+      <li>Día con noticia: el plan baja a la mitad.${noticias ? `<ul>${noticias}</ul>` : ''}</li>
+    </ul>
+    <div class="cierre">Y así hecho está. Gracias, gracias, gracias. 🙏</div>`;
+  document.querySelectorAll('#rs-b [data-esc]').forEach(b=>b.onclick = ()=>{ escProy = b.dataset.esc==='real' ? 'real' : parseFloat(b.dataset.esc); pintarResumen(); });
+}
+function abrirResumen(){
+  pintarFrase();
+  pintarResumen();
+  document.getElementById('rs').classList.add('open');
+  document.querySelector('#rs .rsheet').scrollTop = 0;
+}
+document.getElementById('btnRes').onclick = abrirResumen;
+document.getElementById('rs-x').onclick = ()=>document.getElementById('rs').classList.remove('open');
+document.getElementById('rs').addEventListener('click', e=>{ if(e.target.id==='rs') e.currentTarget.classList.remove('open'); });
+document.addEventListener('keydown', e=>{ if(e.key==='Escape') document.getElementById('rs').classList.remove('open'); });
 </script>
 </body>
 </html>
