@@ -297,15 +297,21 @@ let DATA = [
   {fecha:"2026-10-16", etapa:"Semilla", direccion:"SELL", resultado:"TP", estrategia:null, ajustes:[],
    obs:"PA 59, TP",
    concepto:"La regla se juzga en la serie, no en un día: PA 59 dejó fuera un TP que corrió hasta 1:4 y aun así se respeta el filtro."},
-  {fecha:"2026-10-19", etapa:"Semilla", direccion:"SELL", resultado:"SL", estrategia:-5.73, ajustes:[0,0],
+  {fecha:"2026-10-19", etapa:"Semilla", direccion:"SELL", resultado:"SL", estrategia:-5.73, ajustes:[0, 0],
    obs:"Apertura con ruido en compra, se abre la venta pero se devuelve el precio, tranquilo sin expectativa, se hacen ajustes quedan todos en protección en el retroceso de la vela",
    concepto:"Operar sin expectativa: si el precio se devuelve, proteger en el retroceso de la vela y aceptar la pérdida controlada."},
-  {fecha:"2026-10-20", etapa:"Semilla", direccion:"SELL", resultado:"TP", estrategia:null, ajustes:[0,-1.96,2.5],
+  {fecha:"2026-10-20", etapa:"Semilla", direccion:"SELL", resultado:"TP", estrategia:null, ajustes:[0, -1.96, 2.5],
    obs:"PPA 141, se hacen 3 ajustes, por impulso se hace el tercero aunque se gano esa ultima debo respetar que maximo 2 operaciones, se hay estrategia un ajuste sino maximo 2 ajustes diarios (DISCIPLINA)",
    concepto:"Ganar por impulso no es disciplina: el tercer ajuste salió positivo, pero el límite de 2 ajustes no se negocia."},
-  {fecha:"2026-10-21", etapa:"Semilla", direccion:"BUY", resultado:"SL", estrategia:null, ajustes:[0,0.95],
+  {fecha:"2026-10-21", etapa:"Semilla", direccion:"BUY", resultado:"SL", estrategia:null, ajustes:[0, 0.95],
    obs:"PA 56, No se ingresa por reglas, se hace los ajustes correspondientes",
-   concepto:""}
+   concepto:"Respeto mi filtro y cuido mi capital: esperar también es operar con inteligencia."},
+  {fecha:"2026-10-22", etapa:"Semilla", direccion:"BUY", resultado:"SL", estrategia:null, ajustes:[-1.41, -0.06, 0],
+   obs:"PA 65, No se ingresa por reglas",
+   concepto:"Hoy el precio no cumplió las reglas (PA 65) y no entré. Lo que sí hice fue ajustar con disciplina y proteger el capital en el retroceso. Cerré con una pérdida de -0,28%, y lo acepto como parte del proceso."},
+  {fecha:"2026-10-23", etapa:"Semilla", direccion:"SELL", resultado:"SL", estrategia:null, ajustes:[1.66, 0.8],
+   obs:"PA 72, No se ingresa por reglas",
+   concepto:"Mi paciencia es mi ventaja: actúo solo cuando mis reglas lo confirman."}
 ];
 
 const MAX_AJUSTES = 2;          // límite del plan
@@ -438,10 +444,12 @@ let METAS = {};
 let REVS = {};   // revisiones: días sin operación con observación/capturas (filas del diario sin resultado)
 // ---- Reglas del plan (se leen de las hojas Etapas y Riesgo del Excel; estos valores son el respaldo) ----
 const ETAPAS_BASE = [['Semilla',0.02,30,0.07],['Incubación',0.005,60,0.07],['Aceleración',0.0035,60,0.07],['Pro',0.0035,60,0.07],['Pro 500',0.0035,60,0.07],['Pro M',0.0035,0,0]];   // [etapa, % operación, días de la etapa (0 = sin fin), % a ganar en la etapa (0 = sin objetivo)]
-const RIESGO_BASE = {1:2,2:2,3:1,4:2,5:1,6:0,0:0};   // ratio por día de la semana (0 = domingo)
+const RIESGO_BASE = {1:2,2:2,3:1,4:2,5:0,6:0,0:0};
+const DIAS_SIN_OPERAR = [5];   // días que no se operan (5 = viernes): ratio 0 siempre, aunque la hoja Riesgo del Excel diga otra cosa   // ratio por día de la semana (0 = domingo)
 const PLAN_HASTA = '2027-12-31';                     // el panel genera el plan hasta esta fecha
 let ETAPAS = ETAPAS_BASE.map(([nombre,op,dias,meta])=>({nombre,op,dias,meta}));
 let RIESGO = {...RIESGO_BASE};
+DIAS_SIN_OPERAR.forEach(d=>RIESGO[d]=0);
 
 /* Construye el calendario de etapas día por día a partir de las filas del Excel:
    - Si la fila del Excel trae una Etapa, esa etapa manda ese día (así puedes quedarte un día más en Semilla).
@@ -495,6 +503,7 @@ function leerReglas(wb, n){
     if(k!==undefined && typeof c[1]==='number') ri[k] = c[1];
   });
   if(Object.keys(ri).length) RIESGO = {...RIESGO_BASE, ...ri};
+  DIAS_SIN_OPERAR.forEach(d=>RIESGO[d]=0);
 }
 function leerMetas(wb){
   const ws = wb.Sheets['Metas']; if(!ws) return;
@@ -1101,7 +1110,7 @@ const FRASES_ESTADO = {
 const PERDIDA_ETAPA = 7;           // % máximo de pérdida de la etapa (sobre el balance con el que empezó)
 const ZONAS = [2,4,6];             // semáforo: normal < 2 %, amarillo < 4 %, rojo < 6 %, stop desde 6 %
 const ESCEN = [[1,'Plan 100 %'],[0.25,'25 % del plan'],['real','Mi ritmo real']];
-let escProy = 1;
+let escProy = 0.25;   // escenario inicial: 25 % del plan (el probable)
 
 const usd = v=>(v>=0?'+':'')+f2(v);
 const fcorta = k=>parseFecha(k).toLocaleDateString('es-CO',{day:'numeric',month:'short'});
@@ -1189,8 +1198,10 @@ function pintarFrase(){
 
 function pintarResumen(){
   const R = calcResumen(escProy), dm = R.dm, hoy = claveFecha(new Date()), ult = R.ult;
-  const sen = dm.length, tp = dm.filter(r=>r.resultado==='TP').length, sl = sen-tp;
-  const est = dm.filter(r=>r.operoEstrategia);
+  const opera = r=>(RIESGO[parseFecha(r.fecha).getDay()]||0)>0;   // días con plan (viernes fuera)
+  const dmE = dm.filter(opera);
+  const sen = dmE.length, tp = dmE.filter(r=>r.resultado==='TP').length, sl = sen-tp;
+  const est = dmE.filter(r=>r.operoEstrategia);
   const eg = est.filter(r=>r.est>0).length, ep = est.filter(r=>r.est<0).length, eb = est.length-eg-ep;
   const aj = dm.flatMap(r=>r.ajustes.map(num));
   const ag = aj.filter(a=>a>0).length, ap = aj.filter(a=>a<0).length, ab = aj.length-ag-ap;
@@ -1212,7 +1223,7 @@ function pintarResumen(){
     const k = claveFecha(new Date(vista.y, vista.m, d));
     if(k<=ult && planDia(k)>0) diasPlan.push({fecha:k, plan:planDia(k)});
   }
-  const techo = diasPlan.reduce((a,m)=>a+m.plan*100,0), capt = dm.reduce((a,r)=>a+r.pctDia,0);
+  const techo = diasPlan.reduce((a,m)=>a+m.plan*100,0), capt = dmE.reduce((a,r)=>a+r.pctDia,0);
 
   const kpi = (t,v,sub,c)=>`<div><small>${t}</small><b class="${c||''}">${v}</b><em>${sub||''}</em></div>`;
   const kpis = [
@@ -1227,7 +1238,7 @@ function pintarResumen(){
     kpi('Mejor día', mejor ? usd(mejor.plDia) : '—', mejor ? fcorta(mejor.fecha) : '', 'pos'),
     kpi('Peor día', peor && peor.plDia<0 ? usd(peor.plDia) : '—', peor && peor.plDia<0 ? fcorta(peor.fecha) : 'sin días en rojo', peor && peor.plDia<0 ? 'neg' : ''),
     kpi('Días sin pérdida', racha, 'racha actual'),
-    kpi('Disciplina', pc(sen-exc, sen), `${exc} día(s) con más de ${MAX_AJUSTES} ajustes`, exc?'neg':'pos')
+    kpi('Disciplina', pc(dm.length-exc, dm.length), `${exc} día(s) con más de ${MAX_AJUSTES} ajustes`, exc?'neg':'pos')
   ].join('');
 
   const fila = (t,partes,leg)=>`<div><div class="t"><b>${t}</b></div>${barra(partes)}<div class="leg2">${leg}</div></div>`;
@@ -1303,10 +1314,11 @@ function pintarResumen(){
   }).join('');
   const ri = ritmoInfo();
 
+  const escLbl = escProy==='real' ? 'ritmo real' : Math.round(escProy*100)+' %';
   const dn = ['Dom','Lun','Mar','Mié','Jue','Vie','Sáb'];
   const prox = Object.values(METAS).filter(m=>m.fecha>=hoy).slice(0,7).map(m=>{
     const d = parseFecha(m.fecha), des = !(m.plan>0);
-    return `<div class="${m.noticia>0?'nw':''} ${des?'z':''}">${dn[d.getDay()]} ${d.getDate()}<b>${des?'Descanso':fmtPlan(ritmo(m))}</b>${des?'':`≈ ${usd(balAct*ritmo(m))} USD`}${m.noticia>0?'<br>📰 mitad':''}</div>`;
+    return `<div class="${m.noticia>0?'nw':''} ${des?'z':''}">${dn[d.getDay()]} ${d.getDate()}<b>${des?'Descanso':fmtPlan(m.plan)}</b>${des?'':`<span class="muted">al ${escLbl}: ≈ ${usd(balAct*ritmo(m))} USD</span>`}${m.noticia>0?'<br>📰 mitad':''}</div>`;
   }).join('');
   const noticias = Object.values(METAS).filter(m=>m.noticia>0 && m.fecha>=hoy && enMes(m))
     .map(m=>`<li><b>${fcorta(m.fecha)}</b>: ${esc(m.nota||'Noticia')}</li>`).join('');
@@ -1324,7 +1336,7 @@ function pintarResumen(){
     <table class="tb" style="margin-bottom:10px"><tr><th>Escenario</th><th>Balance a fin de mes</th><th>Desde hoy</th></tr>${comp}</table>
     <div class="muted" style="margin:0 0 10px;font-size:12px">Plan 100 % = techo si cada día pendiente cierra en su % planeado. «Mi ritmo real» = ${(ri.v*100).toFixed(2)} % por día operado${ri.n<10?` (solo ${ri.n} días: estimación con pocos datos)`:''}, aplicado a cada día de plan, así que es optimista si no entras todos los días.</div>
     <div class="segs">${segs}</div>
-    <h3>Próximos 7 días</h3><div class="ag">${prox || '<span class="muted">Sin plan próximo</span>'}</div>
+    <h3>Próximos 7 días · plan y estimado al ${escLbl}</h3><div class="ag">${prox || '<span class="muted">Sin plan próximo</span>'}</div>
     <h3>Qué hacer en cada caso</h3><div class="box"><table class="tb">${casos}</table></div>
     <h3>Reglas del mes</h3>
     <ul class="reglas">
@@ -1332,15 +1344,16 @@ function pintarResumen(){
       <li>Máximo <b>${MAX_AJUSTES} ajustes</b> al día (con estrategia, 1 ajuste). Pérdida discrecional máxima: <b>${MAX_PERDIDA_DISC} %</b>.</li>
       <li>${etReg || 'Sin etapas definidas'}. El % planeado del día = ratio × % por operación.</li>
       <li>Ratio por día: ${ratios}.</li>
+      <li>${DIAS_SIN_OPERAR.length ? DIAS_SIN_OPERAR.map(d=>['domingo','lunes','martes','miércoles','jueves','viernes','sábado'][d]).join(', ')+': no se opera (fuera de la estrategia y del plan).' : ''}</li>
       <li>Día con noticia: el plan baja a la mitad.${noticias ? `<ul>${noticias}</ul>` : ''}</li>
     </ul>
     <div class="cierre">Y así hecho está. Gracias, gracias, gracias. 🙏</div>`;
   document.querySelectorAll('#rs-b [data-esc]').forEach(b=>b.onclick = ()=>{ escProy = b.dataset.esc==='real' ? 'real' : parseFloat(b.dataset.esc); pintarResumen(); });
 }
 function abrirResumen(){
-  pintarFrase();
-  pintarResumen();
   document.getElementById('rs').classList.add('open');
+  try{ pintarFrase(); pintarResumen(); }
+  catch(err){ console.error(err); document.getElementById('rs-b').innerHTML = `<div class="box neg">No pude armar el resumen: ${esc(String(err && err.message || err))}</div>`; }
   document.querySelector('#rs .rsheet').scrollTop = 0;
 }
 document.getElementById('btnRes').onclick = abrirResumen;
