@@ -982,8 +982,9 @@ function abrir(fecha){
       ${acumEtapas(fecha)}
     </table>
     ${alertas.map(a=>`<div class="warn">⚠ ${esc(a)}</div>`).join('')}
-    <div class="obs"><b>Observación:</b> ${esc(r.obs)}</div>
-    ${r.concepto ? `<div class="concepto"><b>Concepto:</b> ${esc(r.concepto)}</div>` : ''}
+    <div class="obs"><b>Observación de la estrategia:</b> ${esc(r.obs) || '—'}</div>
+    ${r.obsAj ? `<div class="obs"><b>Observación de ajustes:</b> ${esc(r.obsAj)}</div>` : ''}
+    ${r.concepto ? `<div class="concepto"><b>Emoción / concepto:</b> ${esc(r.concepto)}</div>` : ''}
     <h2 style="margin-top:16px">Capturas</h2>
     ${fotosHTML(fecha)}
   `;
@@ -1030,7 +1031,8 @@ function procesarLibro(buf){
       estrategia: numv(c[5]),
       ajustes: [6,7,8,9].map(i=>numv(c[i])).filter(v=>v!==null),
       obs: String(c[14]||'').trim(),
-      concepto: String(c[15]||'').trim()
+      obsAj: String(c[15]||'').trim(),
+      concepto: String(c[16]||'').trim()
     });
     { const b = numv(c[10]); if(b!==null) balanceExcel = b; }
   });
