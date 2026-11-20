@@ -493,7 +493,7 @@ function leerReglas(wb, n){
   const et = [];
   filasDe('Etapas').forEach(c=>{
     const nom = String(c[0]||'').trim();
-    if(nom && typeof c[1]==='number') et.push({nombre:nom, op:n(c[1]), dias:n(c[3]), meta:n(c[6])});
+    if(nom && typeof c[1]==='number') et.push({nombre:nom, op:n(c[1]), dias:n(c[3]), meta:n(c[6]), mult:n(c[4]), gan:n(c[7])});
   });
   if(et.length) ETAPAS = et;
   const dias = {LUNES:1, MARTES:2, 'MIÉRCOLES':3, MIERCOLES:3, JUEVES:4, VIERNES:5, 'SÁBADO':6, SABADO:6, DOMINGO:0};
@@ -978,6 +978,7 @@ function abrir(fecha){
       <tr><th>Total discrecional</th><td class="${signo(r.disc)}">${f2(r.disc)}</td></tr>
       <tr><th>Balance inicial</th><td>${f2(r.ini)}</td></tr>
       <tr><th>Balance final</th><td>${f2(r.fin)}${faltaUSD(r)}</td></tr>
+      <tr><th>Proyección por etapa</th><td style="font-size:12px">${proyLinea(r.plDia)}</td></tr>
       <tr><th>% del día</th><td class="${signo(r.pctDia)}">${r.pctDia.toFixed(2)} %</td></tr>
       ${acumEtapas(fecha)}
     </table>
@@ -1198,6 +1199,44 @@ function pintarFrase(){
     `<small>Yo declaro. Yo soy. Yo tengo. Yo recibo. Yo vibro. Yo manifiesto.</small>`;
 }
 
+// Proyección: ganancia del día × multiplicador × % ganancias de cada etapa
+function multGan(nombre){
+  const e = ETAPAS.find(x=>x.nombre===nombre);
+  const def = {'Semilla':[10,0.10],'Incubación':[10,0.40],'Aceleración':[25,0.50],'Pro':[40,0.60],'Pro 500':[50,0.70],'Pro M':[50,0.80]}[nombre] || [0,0];
+  return {mult: (e && e.mult) || def[0], gan: (e && e.gan!=null) ? e.gan : def[1]};
+}
+function proyUSD(pl, nombre){
+  const g = multGan(nombre);
+  return pl * g.mult * g.gan;
+}
+function proyLinea(pl){
+  return ETAPAS.map(e=>`${esc(e.nombre)} ${usd(proyUSD(pl, e.nombre))}`).join(' · ');
+}
+function proyeccionMesHTML(){
+  const dm = ROWS.filter(enMes);
+  if(!dm.length) return '<p class="muted">Sin días registrados este mes.</p>';
+  const filas = ETAPAS.map(e=>{
+    const g = multGan(e.nombre);
+    const tot = dm.reduce((a,r)=>a+proyUSD(r.plDia, e.nombre), 0);
+    return `<tr><th>${esc(e.nombre)}</th><td>× ${g.mult}</td><td>${Math.round(g.gan*100)} %</td><td class="${signo(tot)}"><b>${usd(tot)} USD</b></td></tr>`;
+  }).join('');
+  return `<table class="tb"><tr><th>Etapa</th><td>Multiplicador</td><td>% ganancias</td><td>Ganancia del mes</td></tr>${filas}</table>
+    <p class="muted" style="font-size:12px">Calculado con tus ${dm.length} días reales del mes.</p>`;
+}
+function proyeccionDiaHTML(){
+  const dm = ROWS.filter(enMes);
+  if(!dm.length) return '';
+  const cab = ETAPAS.map(e=>`<td>${esc(e.nombre)}</td>`).join('');
+  const filas = dm.map(r=>{
+    const celdas = ETAPAS.map(e=>{
+      const v = proyUSD(r.plDia, e.nombre);
+      return `<td class="${signo(v)}">${usd(v)}</td>`;
+    }).join('');
+    return `<tr><th>${parseFecha(r.fecha).getDate()}</th><td class="${signo(r.plDia)}">${usd(r.plDia)}</td>${celdas}</tr>`;
+  }).join('');
+  return `<div style="overflow-x:auto"><table class="tb" style="font-size:12px"><tr><th>Día</th><td>Real</td>${cab}</tr>${filas}</table></div>`;
+}
+
 function pintarResumen(){
   const R = calcResumen(escProy), dm = R.dm, hoy = claveFecha(new Date()), ult = R.ult;
   const opera = r=>(RIESGO[parseFecha(r.fecha).getDay()]||0)>0;   // días con plan (viernes fuera)
@@ -1332,6 +1371,8 @@ function pintarResumen(){
     <h3>Ganadas vs. perdidas</h3><div class="wl">${gp}</div>
     <h3>Plan vs. real</h3>${planReal}
     <h3>Meta de la etapa: qué hacer para llegar</h3>${metaHTML || '<p class="muted">La etapa actual no tiene objetivo.</p>'}
+    <h3>Proyección por etapa: mes</h3>${proyeccionMesHTML()}
+    <h3>Proyección por etapa: día a día</h3>${proyeccionDiaHTML()}
     <h3>Tope de pérdida de la etapa</h3>${semaforo}
     <h3>Proyección por etapas · ${MESES[vista.m]}</h3>
     <div class="esc">Escenario: ${chips}</div>
